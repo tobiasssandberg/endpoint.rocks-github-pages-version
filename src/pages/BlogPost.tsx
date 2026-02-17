@@ -54,6 +54,9 @@ const BlogPost = () => {
                 src={post.image_url}
                 alt={post.title}
                 className="mb-8 w-full rounded-xl object-cover"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
               />
             )}
             <div
