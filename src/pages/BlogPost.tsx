@@ -52,8 +52,28 @@ const BlogPost = () => {
     setMeta("twitter:description", post.excerpt);
     if (post.image_url) setMeta("twitter:image", post.image_url);
 
+    // JSON-LD structured data
+    const jsonLd = document.createElement("script");
+    jsonLd.type = "application/ld+json";
+    jsonLd.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: post.title,
+      description: post.excerpt,
+      url: ogUrl,
+      datePublished: post.published_at || post.created_at,
+      dateModified: post.updated_at,
+      ...(post.image_url ? { image: post.image_url } : {}),
+      publisher: {
+        "@type": "Organization",
+        name: "Endpoint.rocks",
+      },
+    });
+    document.head.appendChild(jsonLd);
+
     return () => {
       document.title = "Endpoint.rocks";
+      jsonLd.remove();
       ["description", "twitter:card", "twitter:title", "twitter:description", "twitter:image"].forEach((n) =>
         document.querySelector(`meta[name="${n}"]`)?.remove()
       );
