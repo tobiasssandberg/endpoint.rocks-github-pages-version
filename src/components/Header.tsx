@@ -14,7 +14,10 @@ const Header = () => {
   const goToSection = useCallback((id: string) => {
     setOpen(false);
     if (location.pathname === "/") {
-      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      // Delay scroll to let Sheet close and layout settle
+      setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      }, 350);
     } else {
       navigate(`/#${id}`);
     }
