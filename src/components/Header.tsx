@@ -26,7 +26,7 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center">
           <span className="text-xl font-bold text-primary">Endpoint</span>
           <span className="text-xl font-bold text-foreground">.rocks</span>
         </Link>
