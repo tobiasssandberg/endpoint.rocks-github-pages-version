@@ -1,32 +1,38 @@
-import { useState } from "react";
-import { Menu, X, Settings } from "lucide-react";
+import { useState, useCallback } from "react";
+import { Menu, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const { isAdmin } = useAuth();
   const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  const goToSection = useCallback((id: string) => {
     setOpen(false);
-  };
+    if (location.pathname === "/") {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      navigate(`/#${id}`);
+    }
+  }, [location.pathname, navigate]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <span className="text-xl font-bold text-primary">Endpoint</span>
           <span className="text-xl font-bold text-foreground">.rocks</span>
-        </button>
+        </Link>
 
         <nav className="hidden gap-6 md:flex items-center">
-          <button onClick={() => scrollTo("tools")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <button onClick={() => goToSection("tools")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Community Tools
           </button>
-          <button onClick={() => scrollTo("blog")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <button onClick={() => goToSection("blog")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Blog
           </button>
           {isAdmin && (
@@ -44,12 +50,17 @@ const Header = () => {
           </SheetTrigger>
           <SheetContent side="right" className="w-64 bg-background">
             <nav className="mt-8 flex flex-col gap-4">
-              <button onClick={() => scrollTo("tools")} className="text-left text-lg text-muted-foreground hover:text-foreground">
+              <button onClick={() => goToSection("tools")} className="text-left text-lg text-muted-foreground hover:text-foreground">
                 Community Tools
               </button>
-              <button onClick={() => scrollTo("blog")} className="text-left text-lg text-muted-foreground hover:text-foreground">
+              <button onClick={() => goToSection("blog")} className="text-left text-lg text-muted-foreground hover:text-foreground">
                 Blog
               </button>
+              {isAdmin && (
+                <Link to="/admin" onClick={() => setOpen(false)} className="text-left text-lg text-primary hover:text-primary/80 flex items-center gap-2">
+                  <Settings className="h-4 w-4" /> Admin
+                </Link>
+              )}
             </nav>
           </SheetContent>
         </Sheet>
