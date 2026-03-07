@@ -21,7 +21,7 @@ const HeroSection = ({ searchQuery, onSearchChange }: HeroSectionProps) => {
           <span className="text-foreground">.rocks</span>
         </h1>
         <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground md:text-xl">
-          Your gateway to the best community tools for Microsoft Intune
+          Your gateway to the best community tools and insights for Microsoft Intune
         </p>
 
         <div className="mx-auto max-w-lg">
