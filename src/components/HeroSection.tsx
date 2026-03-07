@@ -43,6 +43,16 @@ const HeroSection = ({ searchQuery, onSearchChange }: HeroSectionProps) => {
         >
           📝 Read the latest blog posts →
         </Link>
+        <div className="mt-3">
+          <a
+            href="https://github.com/hillihappo"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
+          >
+            🐙 GitHub →
+          </a>
+        </div>
       </div>
     </section>
   );
