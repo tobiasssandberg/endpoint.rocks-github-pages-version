@@ -16,6 +16,7 @@ import JsonImportButton from "@/components/JsonImportButton";
 import { toast } from "sonner";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import { isSafeUrl } from "@/lib/urlValidation";
+import MfaEnroll from "@/components/MfaEnroll";
 
 const CATEGORIES = [
   "Management Tools & Scripts",
@@ -65,6 +66,14 @@ const Admin = () => {
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
+    // If user has MFA enrolled, enforce AAL2
+    if (user) {
+      supabase.auth.mfa.getAuthenticatorAssuranceLevel().then(({ data }) => {
+        if (data && data.nextLevel === "aal2" && data.currentLevel !== "aal2") {
+          navigate("/mfa-verify");
+        }
+      });
+    }
   }, [loading, user, navigate]);
 
   // Tools queries & mutations
@@ -273,6 +282,7 @@ const Admin = () => {
           <TabsList className="mb-6">
             <TabsTrigger value="blog">Blog ({blogPosts?.length ?? 0})</TabsTrigger>
             <TabsTrigger value="tools">Tools ({tools?.length ?? 0})</TabsTrigger>
+            <TabsTrigger value="security">Security</TabsTrigger>
           </TabsList>
 
           {/* TOOLS TAB */}
@@ -419,6 +429,14 @@ const Admin = () => {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          </TabsContent>
+
+          {/* SECURITY TAB */}
+          <TabsContent value="security">
+            <div className="max-w-lg space-y-6">
+              <h2 className="text-2xl font-bold">Security Settings</h2>
+              <MfaEnroll />
             </div>
           </TabsContent>
         </Tabs>
