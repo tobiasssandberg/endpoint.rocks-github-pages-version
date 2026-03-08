@@ -56,6 +56,10 @@ const Admin = () => {
   const [blogEditId, setBlogEditId] = useState<string | null>(null);
   const [blogDialogOpen, setBlogDialogOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
