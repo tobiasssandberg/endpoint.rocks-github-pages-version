@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Search, Github, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
@@ -12,8 +12,24 @@ interface HeroSectionProps {
 
 const HeroSection = ({ searchQuery, onSearchChange, toolCount = 0, blogCount = 0 }: HeroSectionProps) => {
   const [isFocused, setIsFocused] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
   const isSearching = searchQuery.trim().length > 0;
   const totalResults = toolCount + blogCount;
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+      if (e.key === "/" && !["INPUT", "TEXTAREA", "SELECT"].includes((e.target as HTMLElement).tagName)) {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", handleGlobalKeyDown);
+    return () => document.removeEventListener("keydown", handleGlobalKeyDown);
+  }, []);
 
   return (
     <section className="relative overflow-hidden py-20 md:py-32">
@@ -35,6 +51,7 @@ const HeroSection = ({ searchQuery, onSearchChange, toolCount = 0, blogCount = 0
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <Input
+              ref={searchRef}
               type="text"
               placeholder="Search tools and blog posts..."
               value={searchQuery}
@@ -70,7 +87,11 @@ const HeroSection = ({ searchQuery, onSearchChange, toolCount = 0, blogCount = 0
             <p className="mt-3 animate-fade-in text-xs text-muted-foreground/40">
               Press <kbd className="rounded border border-border/50 px-1.5 py-0.5 font-mono text-[10px]">Esc</kbd> to clear
             </p>
-          ) : null}
+          ) : (
+            <p className="mt-3 text-xs text-muted-foreground/30">
+              Press <kbd className="rounded border border-border/50 px-1.5 py-0.5 font-mono text-[10px]">/</kbd> or <kbd className="rounded border border-border/50 px-1.5 py-0.5 font-mono text-[10px]">⌘K</kbd> to search
+            </p>
+          )}
         </div>
 
         <Link
