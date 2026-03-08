@@ -63,7 +63,7 @@ const HeroSection = ({ searchQuery, onSearchChange, toolCount = 0, blogCount = 0
                 </span>
               )}
               {isFocused && (
-                <span className="ml-2 text-muted-foreground/60">· Press Escape to clear</span>
+                <span className="ml-2 animate-fade-in text-muted-foreground/60">· Press Escape to clear</span>
               )}
             </p>
           ) : isFocused ? (
