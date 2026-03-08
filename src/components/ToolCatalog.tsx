@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchPublicRows, withTimeout } from "@/lib/publicData";
 import { ExternalLink } from "lucide-react";
+import { isSafeUrl } from "@/lib/urlValidation";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
