@@ -62,6 +62,9 @@ const Header = () => {
               <button onClick={() => goToSection("tools")} className="text-left text-lg text-muted-foreground hover:text-foreground">
                 Community Tools
               </button>
+              <button onClick={() => goToSection("about")} className="text-left text-lg text-muted-foreground hover:text-foreground">
+                About
+              </button>
               {isAdmin && (
                 <Link to="/admin" onClick={() => setOpen(false)} className="text-left text-lg text-primary hover:text-primary/80 flex items-center gap-2">
                   <Settings className="h-4 w-4" /> Admin
