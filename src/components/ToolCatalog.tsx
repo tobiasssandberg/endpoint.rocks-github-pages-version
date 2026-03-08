@@ -120,7 +120,7 @@ const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResult
           </div>
         ) : errorMessage ? (
           <p className="py-12 text-center text-muted-foreground">
-            Kunde inte hämta verktyg just nu. Ladda om sidan och försök igen. ({errorMessage})
+            Kunde inte hämta verktyg just nu. Ladda om sidan och försök igen.
           </p>
         ) : filtered.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

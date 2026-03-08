@@ -80,6 +80,7 @@ const Admin = () => {
 
   const saveToolMutation = useMutation({
     mutationFn: async (tool: ToolForm & { id?: string }) => {
+      if (!isSafeUrl(tool.url)) throw new Error("URL must start with http:// or https://");
       if (tool.id) {
         const { error } = await supabase.from("tools").update(tool).eq("id", tool.id);
         if (error) throw error;
