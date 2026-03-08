@@ -52,7 +52,8 @@ const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResult
 
         if (active) setTools(rows);
       } catch (error) {
-        if (active) setErrorMessage(error instanceof Error ? error.message : "Unknown error");
+        console.error('[ToolCatalog] load error:', error);
+        if (active) setErrorMessage("Could not load tools. Please try again later.");
       } finally {
         if (active) setIsLoading(false);
       }
