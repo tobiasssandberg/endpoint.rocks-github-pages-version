@@ -43,7 +43,8 @@ const BlogSection = ({ searchQuery = "", onResultCount }: BlogSectionProps) => {
 
         if (active) setAllPosts(rows);
       } catch (error) {
-        if (active) setErrorMessage(error instanceof Error ? error.message : "Unknown error");
+        console.error("Failed to load blog posts:", error);
+        if (active) setErrorMessage("load_error");
       } finally {
         if (active) setIsLoading(false);
       }
