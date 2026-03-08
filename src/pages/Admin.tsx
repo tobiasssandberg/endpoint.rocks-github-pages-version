@@ -246,7 +246,7 @@ const Admin = () => {
               </DialogTrigger>
               <DialogContent className="sm:max-w-sm">
                 <DialogHeader>
-                  <DialogTitle>Byt lösenord</DialogTitle>
+                  <DialogTitle>Change Password</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <Input type="password" placeholder="Nytt lösenord (minst 8 tecken)" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
