@@ -164,14 +164,14 @@ const Admin = () => {
   const syncFromRSS = async () => {
     setSyncing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("rss-feed", {
-        body: null,
-        method: "GET",
-      });
-      // Use fetch directly with query param
+      // Get the user's session JWT for authenticated admin access
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (!currentSession?.access_token) {
+        throw new Error("You must be logged in to sync");
+      }
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rss-feed?migrate=true`,
-        { headers: { Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` } }
+        { headers: { Authorization: `Bearer ${currentSession.access_token}` } }
       );
       const result = await res.json();
       if (result.error) throw new Error(result.error);

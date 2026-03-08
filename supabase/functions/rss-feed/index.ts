@@ -46,7 +46,6 @@ serve(async (req) => {
 
       const cleanDesc = desc.replace(/<[^>]*>/g, '').substring(0, 200);
       
-      // Generate slug from link
       const slug = link.replace(/https?:\/\/[^/]+/, '').replace(/\//g, '-').replace(/^-|-$/g, '') || 
                    title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
@@ -54,10 +53,47 @@ serve(async (req) => {
     }
 
     if (migrate) {
-      // Get auth header for service role
+      // Authenticate the caller and verify admin role
       const authHeader = req.headers.get('Authorization');
+      if (!authHeader) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
       const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+      // Verify the user's JWT using the anon client
+      const anonClient = createClient(supabaseUrl, supabaseAnonKey);
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: authError } = await anonClient.auth.getUser(token);
+
+      if (authError || !user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Check admin role
+      const { data: roleData } = await anonClient
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (!roleData) {
+        return new Response(JSON.stringify({ error: 'Forbidden: admin role required' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Use service role client for the actual upsert
       const supabase = createClient(supabaseUrl, serviceKey);
 
       const postsToInsert = items.map(item => ({
