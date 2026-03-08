@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pencil, Trash2, Plus, LogOut, RefreshCw, KeyRound } from "lucide-react";
+import JsonImportButton from "@/components/JsonImportButton";
 import { toast } from "sonner";
 import MarkdownEditor from "@/components/MarkdownEditor";
 
@@ -275,6 +276,22 @@ const Admin = () => {
           <TabsContent value="tools">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-2xl font-bold">Manage Tools</h2>
+              <div className="flex gap-2">
+                <JsonImportButton
+                  label="Import Tools"
+                  onImport={async (items) => {
+                    const rows = items.map((t: any) => ({
+                      name: t.name,
+                      description: t.description,
+                      url: t.url,
+                      category: t.category,
+                    }));
+                    const { error } = await supabase.from("tools").insert(rows);
+                    if (error) throw error;
+                    queryClient.invalidateQueries({ queryKey: ["admin-tools"] });
+                    queryClient.invalidateQueries({ queryKey: ["tools"] });
+                  }}
+                />
               <Dialog open={toolDialogOpen} onOpenChange={setToolDialogOpen}>
                 <DialogTrigger asChild>
                   <Button onClick={() => { setToolForm(emptyToolForm); setToolEditId(null); setToolDialogOpen(true); }}>
@@ -301,6 +318,7 @@ const Admin = () => {
                   </form>
                 </DialogContent>
               </Dialog>
+              </div>
             </div>
 
             <div className="rounded-xl border border-border/50 overflow-hidden">
@@ -346,6 +364,23 @@ const Admin = () => {
                 <Button variant="outline" onClick={syncFromRSS} disabled={syncing}>
                   <RefreshCw className={`mr-1 h-4 w-4 ${syncing ? "animate-spin" : ""}`} /> Sync from RSS
                 </Button>
+                <JsonImportButton
+                  label="Import Posts"
+                  onImport={async (items) => {
+                    const rows = items.map((p: any) => ({
+                      title: p.title,
+                      slug: p.slug,
+                      content: p.content || "",
+                      excerpt: p.excerpt || "",
+                      image_url: p.image_url || null,
+                      published_at: p.published_at || null,
+                    }));
+                    const { error } = await supabase.from("blog_posts").insert(rows);
+                    if (error) throw error;
+                    queryClient.invalidateQueries({ queryKey: ["admin-blog"] });
+                    queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
+                  }}
+                />
                 <Dialog open={blogDialogOpen} onOpenChange={setBlogDialogOpen}>
                   <DialogTrigger asChild>
                     <Button onClick={() => { setBlogForm(emptyBlogForm); setBlogEditId(null); setBlogDialogOpen(true); }}>
