@@ -32,12 +32,12 @@ const Header = () => {
         </Link>
 
         <nav className="hidden gap-6 md:flex items-center">
-          <button onClick={() => goToSection("tools")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-            Community Tools
-          </button>
           <Link to="/blog" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Blog
           </Link>
+          <button onClick={() => goToSection("tools")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            Community Tools
+          </button>
           {isAdmin && (
             <Link to="/admin" className="text-sm text-primary transition-colors hover:text-primary/80 flex items-center gap-1">
               <Settings className="h-3.5 w-3.5" /> Admin
@@ -53,12 +53,12 @@ const Header = () => {
           </SheetTrigger>
           <SheetContent side="right" className="w-64 bg-background">
             <nav className="mt-8 flex flex-col gap-4">
-              <button onClick={() => goToSection("tools")} className="text-left text-lg text-muted-foreground hover:text-foreground">
-                Community Tools
-              </button>
               <Link to="/blog" onClick={() => setOpen(false)} className="text-left text-lg text-muted-foreground hover:text-foreground">
                 Blog
               </Link>
+              <button onClick={() => goToSection("tools")} className="text-left text-lg text-muted-foreground hover:text-foreground">
+                Community Tools
+              </button>
               {isAdmin && (
                 <Link to="/admin" onClick={() => setOpen(false)} className="text-left text-lg text-primary hover:text-primary/80 flex items-center gap-2">
                   <Settings className="h-4 w-4" /> Admin
