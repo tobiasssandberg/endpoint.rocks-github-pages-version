@@ -1,0 +1,11 @@
+
+DROP POLICY "Published posts are publicly readable" ON public.blog_posts;
+DROP POLICY "Admins see all blog posts" ON public.blog_posts;
+
+CREATE POLICY "Published posts are publicly readable"
+  ON public.blog_posts FOR SELECT
+  USING (published_at IS NOT NULL AND published_at <= now());
+
+CREATE POLICY "Admins see all blog posts"
+  ON public.blog_posts FOR SELECT TO authenticated
+  USING (has_role(auth.uid(), 'admin'::app_role));
