@@ -367,6 +367,7 @@ const Admin = () => {
                 </Button>
                 <JsonImportButton
                   label="Import Posts"
+                  dataKey="blog_posts"
                   onImport={async (items) => {
                     const rows = items.map((p: any) => ({
                       title: p.title,
