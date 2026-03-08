@@ -21,9 +21,6 @@ const Auth = () => {
     setLoading(true);
     const { error } = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
-      extraParams: {
-        login_hint: "tobiasssandberg@gmail.com",
-      },
     });
     if (error) {
       toast.error(error.message || "Sign in failed");
