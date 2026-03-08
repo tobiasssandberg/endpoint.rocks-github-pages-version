@@ -318,6 +318,7 @@ const Admin = () => {
                   </form>
                 </DialogContent>
               </Dialog>
+              </div>
             </div>
 
             <div className="rounded-xl border border-border/50 overflow-hidden">
