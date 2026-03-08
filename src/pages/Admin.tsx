@@ -364,6 +364,23 @@ const Admin = () => {
                 <Button variant="outline" onClick={syncFromRSS} disabled={syncing}>
                   <RefreshCw className={`mr-1 h-4 w-4 ${syncing ? "animate-spin" : ""}`} /> Sync from RSS
                 </Button>
+                <JsonImportButton
+                  label="Import Posts"
+                  onImport={async (items) => {
+                    const rows = items.map((p: any) => ({
+                      title: p.title,
+                      slug: p.slug,
+                      content: p.content || "",
+                      excerpt: p.excerpt || "",
+                      image_url: p.image_url || null,
+                      published_at: p.published_at || null,
+                    }));
+                    const { error } = await supabase.from("blog_posts").insert(rows);
+                    if (error) throw error;
+                    queryClient.invalidateQueries({ queryKey: ["admin-blog"] });
+                    queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
+                  }}
+                />
                 <Dialog open={blogDialogOpen} onOpenChange={setBlogDialogOpen}>
                   <DialogTrigger asChild>
                     <Button onClick={() => { setBlogForm(emptyBlogForm); setBlogEditId(null); setBlogDialogOpen(true); }}>
