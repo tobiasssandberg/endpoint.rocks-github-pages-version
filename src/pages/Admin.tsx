@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pencil, Trash2, Plus, LogOut, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import MarkdownEditor from "@/components/MarkdownEditor";
 
 const CATEGORIES = [
   "Management Tools & Scripts",
@@ -314,7 +315,7 @@ const Admin = () => {
                       <Input placeholder="Slug (url-friendly)" value={blogForm.slug} onChange={(e) => setBlogForm({ ...blogForm, slug: e.target.value })} required />
                       <Input placeholder="Image URL (optional)" value={blogForm.image_url} onChange={(e) => setBlogForm({ ...blogForm, image_url: e.target.value })} />
                       <Textarea placeholder="Excerpt (short summary)" value={blogForm.excerpt} onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })} rows={2} required />
-                      <Textarea placeholder="Content (HTML)" value={blogForm.content} onChange={(e) => setBlogForm({ ...blogForm, content: e.target.value })} rows={12} required />
+                      <MarkdownEditor value={blogForm.content} onChange={(v) => setBlogForm({ ...blogForm, content: v })} />
                       <Input type="datetime-local" value={blogForm.published_at} onChange={(e) => setBlogForm({ ...blogForm, published_at: e.target.value })} />
                       <Button type="submit" className="w-full" disabled={saveBlogMutation.isPending}>
                         {saveBlogMutation.isPending ? "Saving..." : "Save"}
