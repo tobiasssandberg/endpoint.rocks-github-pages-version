@@ -38,7 +38,14 @@ const BlogSection = ({ searchQuery = "" }: BlogSectionProps) => {
   return (
     <section id="blog" className="border-t border-border/50 py-16">
       <div className="container mx-auto px-4">
-        <h2 className="mb-8 text-2xl font-bold md:text-3xl">Latest from the Blog</h2>
+        <h2 className="mb-8 text-2xl font-bold md:text-3xl">
+          Latest from the Blog
+          {isSearching && posts && (
+            <span className="ml-3 inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-sm font-medium text-primary">
+              {posts.length} {posts.length === 1 ? "result" : "results"}
+            </span>
+          )}
+        </h2>
 
         {isLoading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -40,7 +40,14 @@ const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange }: ToolCa
   return (
     <section id="tools" className="py-16">
       <div className="container mx-auto px-4">
-        <h2 className="mb-8 text-2xl font-bold md:text-3xl">Community Tools</h2>
+        <h2 className="mb-8 text-2xl font-bold md:text-3xl">
+          Community Tools
+          {searchQuery && filtered && (
+            <span className="ml-3 inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-sm font-medium text-primary">
+              {filtered.length} {filtered.length === 1 ? "result" : "results"}
+            </span>
+          )}
+        </h2>
 
         {/* Category filter */}
         <div className="mb-8 flex flex-wrap gap-2">
