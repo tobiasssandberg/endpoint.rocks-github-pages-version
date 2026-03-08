@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchPublicRows, withTimeout } from "@/lib/publicData";
 import { ExternalLink } from "lucide-react";
+import { isSafeUrl } from "@/lib/urlValidation";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -51,7 +52,8 @@ const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResult
 
         if (active) setTools(rows);
       } catch (error) {
-        if (active) setErrorMessage(error instanceof Error ? error.message : "Unknown error");
+        console.error('[ToolCatalog] load error:', error);
+        if (active) setErrorMessage("Could not load tools. Please try again later.");
       } finally {
         if (active) setIsLoading(false);
       }
@@ -118,14 +120,14 @@ const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResult
           </div>
         ) : errorMessage ? (
           <p className="py-12 text-center text-muted-foreground">
-            Kunde inte hämta verktyg just nu. Ladda om sidan och försök igen. ({errorMessage})
+            Kunde inte hämta verktyg just nu. Ladda om sidan och försök igen.
           </p>
         ) : filtered.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((tool) => (
               <a
                 key={tool.id}
-                href={tool.url}
+                href={isSafeUrl(tool.url) ? tool.url : "#"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group relative flex flex-col rounded-xl border border-border/50 bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"

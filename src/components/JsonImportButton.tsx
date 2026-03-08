@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { isSafeUrl } from "@/lib/urlValidation";
 import { useQueryClient } from "@tanstack/react-query";
 
 const JsonImportButton = () => {
@@ -36,12 +37,15 @@ const JsonImportButton = () => {
       }
 
       if (Array.isArray(parsed.tools) && parsed.tools.length > 0) {
-        const rows = parsed.tools.map((t: any) => ({
-          name: t.name,
-          description: t.description,
-          url: t.url,
-          category: t.category,
-        }));
+        const rows = parsed.tools.map((t: any) => {
+          if (!isSafeUrl(t.url)) throw new Error(`Invalid URL for tool "${t.name}": must start with http:// or https://`);
+          return {
+            name: t.name,
+            description: t.description,
+            url: t.url,
+            category: t.category,
+          };
+        });
         const { error } = await supabase.from("tools").insert(rows);
         if (error) throw error;
         toolCount = rows.length;
