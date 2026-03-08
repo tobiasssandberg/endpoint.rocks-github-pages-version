@@ -26,6 +26,7 @@ const Index = () => {
           blogCount={blogCount}
         />
         <BlogSection searchQuery={searchQuery} onResultCount={handleBlogCount} />
+        <AboutSection />
         <ToolCatalog
           searchQuery={searchQuery}
           selectedCategory={selectedCategory}
