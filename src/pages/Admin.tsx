@@ -274,7 +274,7 @@ const Admin = () => {
           <TabsList className="mb-6">
             <TabsTrigger value="blog">Blog ({blogPosts?.length ?? 0})</TabsTrigger>
             <TabsTrigger value="tools">Tools ({tools?.length ?? 0})</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
+            
           </TabsList>
 
           {/* TOOLS TAB */}
