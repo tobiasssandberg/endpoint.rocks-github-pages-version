@@ -37,6 +37,7 @@ const HeroSection = ({ searchQuery, onSearchChange, toolCount = 0, blogCount = 0
               placeholder="Search tools and blog posts..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Escape") { onSearchChange(""); (e.target as HTMLInputElement).blur(); } }}
               className="h-12 rounded-xl border-border/50 bg-card pl-10 pr-10 text-base shadow-lg shadow-primary/5 placeholder:text-muted-foreground focus-visible:ring-primary"
             />
             {isSearching && (
