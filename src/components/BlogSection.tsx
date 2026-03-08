@@ -13,7 +13,7 @@ interface BlogSectionProps {
 const BlogSection = ({ searchQuery = "", onResultCount }: BlogSectionProps) => {
   const isSearching = searchQuery.trim().length > 0;
 
-  const { data: allPosts, isLoading } = useQuery({
+  const { data: allPosts = [], isLoading, isError, error } = useQuery({
     queryKey: ["blog-posts"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -21,12 +21,14 @@ const BlogSection = ({ searchQuery = "", onResultCount }: BlogSectionProps) => {
         .select("id, title, slug, excerpt, image_url, published_at")
         .order("published_at", { ascending: false });
       if (error) throw error;
-      return data;
+      return data ?? [];
     },
     staleTime: 1000 * 60 * 10,
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 
-  const posts = allPosts?.filter((post) => {
+  const posts = allPosts.filter((post) => {
     if (!isSearching) return true;
     const q = searchQuery.toLowerCase();
     return (
@@ -36,21 +38,21 @@ const BlogSection = ({ searchQuery = "", onResultCount }: BlogSectionProps) => {
   });
 
   useEffect(() => {
-    if (isSearching && posts) {
+    if (isSearching) {
       onResultCount?.(posts.length);
-    } else if (!isSearching) {
+    } else {
       onResultCount?.(0);
     }
-  }, [posts?.length, isSearching, onResultCount]);
+  }, [posts.length, isSearching, onResultCount]);
 
-  const displayPosts = isSearching ? posts : posts?.slice(0, 3);
+  const displayPosts = isSearching ? posts : posts.slice(0, 3);
 
   return (
     <section id="blog" className="border-t border-border/50 py-16">
       <div className="container mx-auto px-4">
         <h2 className="mb-8 text-2xl font-bold md:text-3xl">
           Latest from the Blog
-          {isSearching && posts && (
+          {isSearching && (
             <span className="ml-3 inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-sm font-medium text-primary">
               {posts.length} {posts.length === 1 ? "result" : "results"}
             </span>
@@ -63,7 +65,12 @@ const BlogSection = ({ searchQuery = "", onResultCount }: BlogSectionProps) => {
               <Skeleton key={i} className="h-48 rounded-xl" />
             ))}
           </div>
-        ) : displayPosts && displayPosts.length > 0 ? (
+        ) : isError ? (
+          <p className="text-muted-foreground">
+            Kunde inte hämta blogginlägg just nu. Ladda om sidan och försök igen.
+            {error instanceof Error ? ` (${error.message})` : ""}
+          </p>
+        ) : displayPosts.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {displayPosts.map((post, index) => (
               <Link
@@ -95,7 +102,7 @@ const BlogSection = ({ searchQuery = "", onResultCount }: BlogSectionProps) => {
           </p>
         )}
 
-        {!isSearching && posts && posts.length > 0 && (
+        {!isSearching && posts.length > 0 && (
           <div className="mt-8 text-center">
             <Link
               to="/blog"

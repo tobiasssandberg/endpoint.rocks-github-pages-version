@@ -21,16 +21,18 @@ interface ToolCatalogProps {
 }
 
 const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResultCount }: ToolCatalogProps) => {
-  const { data: tools, isLoading } = useQuery({
+  const { data: tools = [], isLoading, isError, error } = useQuery({
     queryKey: ["tools"],
     queryFn: async () => {
       const { data, error } = await supabase.from("tools").select("*").order("name");
       if (error) throw error;
-      return data;
+      return data ?? [];
     },
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 
-  const filtered = tools?.filter((tool) => {
+  const filtered = tools.filter((tool) => {
     const matchesCategory = selectedCategory === "All" || tool.category === selectedCategory;
     const matchesSearch =
       !searchQuery ||
@@ -40,19 +42,19 @@ const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResult
   });
 
   useEffect(() => {
-    if (searchQuery && filtered) {
+    if (searchQuery) {
       onResultCount?.(filtered.length);
-    } else if (!searchQuery) {
+    } else {
       onResultCount?.(0);
     }
-  }, [filtered?.length, searchQuery, onResultCount]);
+  }, [filtered.length, searchQuery, onResultCount]);
 
   return (
     <section id="tools" className="py-16">
       <div className="container mx-auto px-4">
         <h2 className="mb-8 text-2xl font-bold md:text-3xl">
           Community Tools
-          {searchQuery && filtered && (
+          {searchQuery && (
             <span className="ml-3 inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-sm font-medium text-primary">
               {filtered.length} {filtered.length === 1 ? "result" : "results"}
             </span>
@@ -83,9 +85,14 @@ const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResult
               <Skeleton key={i} className="h-40 rounded-xl" />
             ))}
           </div>
-        ) : (
+        ) : isError ? (
+          <p className="py-12 text-center text-muted-foreground">
+            Kunde inte hämta verktyg just nu. Ladda om sidan och försök igen.
+            {error instanceof Error ? ` (${error.message})` : ""}
+          </p>
+        ) : filtered.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered?.map((tool) => (
+            {filtered.map((tool) => (
               <a
                 key={tool.id}
                 href={tool.url}
@@ -108,9 +115,7 @@ const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResult
               </a>
             ))}
           </div>
-        )}
-
-        {filtered?.length === 0 && !isLoading && (
+        ) : (
           <p className="py-12 text-center text-muted-foreground">No tools found matching your search.</p>
         )}
       </div>
