@@ -43,7 +43,8 @@ const BlogSection = ({ searchQuery = "", onResultCount }: BlogSectionProps) => {
 
         if (active) setAllPosts(rows);
       } catch (error) {
-        if (active) setErrorMessage(error instanceof Error ? error.message : "Unknown error");
+        console.error("Failed to load blog posts:", error);
+        if (active) setErrorMessage("load_error");
       } finally {
         if (active) setIsLoading(false);
       }
@@ -94,7 +95,7 @@ const BlogSection = ({ searchQuery = "", onResultCount }: BlogSectionProps) => {
           </div>
         ) : errorMessage ? (
           <p className="text-muted-foreground">
-            Kunde inte hämta blogginlägg just nu. Ladda om sidan och försök igen. ({errorMessage})
+            Kunde inte hämta blogginlägg just nu. Ladda om sidan och försök igen.
           </p>
         ) : displayPosts.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

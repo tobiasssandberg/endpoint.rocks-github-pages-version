@@ -191,18 +191,17 @@ const Admin = () => {
   };
 
 
+  // Redirect non-admin users away from admin page
+  useEffect(() => {
+    if (!loading && user && !isAdmin) {
+      navigate("/");
+    }
+  }, [loading, user, isAdmin, navigate]);
+
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-background text-foreground">Loading...</div>;
 
-  if (!isAdmin) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-background text-foreground gap-4">
-        <p className="text-muted-foreground">You don't have admin access.</p>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate("/")}>Back to site</Button>
-          <Button variant="ghost" onClick={signOut}>Sign Out</Button>
-        </div>
-      </div>
-    );
+  if (!user || !isAdmin) {
+    return null;
   }
 
   return (
