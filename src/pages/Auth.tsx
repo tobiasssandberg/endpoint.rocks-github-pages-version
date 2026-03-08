@@ -15,7 +15,16 @@ const Auth = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user) navigate("/admin");
+    if (user) {
+      // Check if user has MFA enrolled — if so, check AAL level
+      supabase.auth.mfa.getAuthenticatorAssuranceLevel().then(({ data }) => {
+        if (data && data.nextLevel === "aal2" && data.currentLevel !== "aal2") {
+          navigate("/mfa-verify");
+        } else {
+          navigate("/admin");
+        }
+      });
+    }
   }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,6 +34,14 @@ const Auth = () => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       toast.error(error.message);
+      setLoading(false);
+      return;
+    }
+
+    // After sign in, check if MFA is required
+    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalData && aalData.nextLevel === "aal2" && aalData.currentLevel !== "aal2") {
+      navigate("/mfa-verify");
     } else {
       navigate("/admin");
     }
