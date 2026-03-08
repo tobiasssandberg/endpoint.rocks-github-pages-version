@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ExternalLink } from "lucide-react";
@@ -16,9 +17,10 @@ interface ToolCatalogProps {
   searchQuery: string;
   selectedCategory: string;
   onCategoryChange: (cat: string) => void;
+  onResultCount?: (count: number) => void;
 }
 
-const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange }: ToolCatalogProps) => {
+const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResultCount }: ToolCatalogProps) => {
   const { data: tools, isLoading } = useQuery({
     queryKey: ["tools"],
     queryFn: async () => {

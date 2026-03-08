@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, ArrowRight } from "lucide-react";
@@ -6,9 +7,10 @@ import { Link } from "react-router-dom";
 
 interface BlogSectionProps {
   searchQuery?: string;
+  onResultCount?: (count: number) => void;
 }
 
-const BlogSection = ({ searchQuery = "" }: BlogSectionProps) => {
+const BlogSection = ({ searchQuery = "", onResultCount }: BlogSectionProps) => {
   const isSearching = searchQuery.trim().length > 0;
 
   const { data: allPosts, isLoading } = useQuery({
