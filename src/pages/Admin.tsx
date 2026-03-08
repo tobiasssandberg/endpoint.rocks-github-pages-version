@@ -424,13 +424,6 @@ const Admin = () => {
             </div>
           </TabsContent>
 
-          {/* SECURITY TAB */}
-          <TabsContent value="security">
-            <div className="max-w-lg space-y-6">
-              <h2 className="text-2xl font-bold">Security Settings</h2>
-              <MfaEnroll />
-            </div>
-          </TabsContent>
         </Tabs>
       </main>
     </div>
