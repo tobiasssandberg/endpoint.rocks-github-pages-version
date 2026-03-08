@@ -15,10 +15,10 @@ const AboutSection = () => {
             </Avatar>
 
             <div className="text-center sm:text-left space-y-3">
-              <h2 className="text-2xl font-bold text-foreground">Om mig</h2>
+              <h2 className="text-2xl font-bold text-foreground">About Me</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Jag är en teknikentusiast som gillar att utforska och samla de bästa AI-verktygen och resurserna.
-                Här på Endpoint.rocks delar jag med mig av verktyg, guider och tankar kring AI och automation.
+                I'm a tech enthusiast who loves exploring and curating the best AI tools and resources.
+                Here on Endpoint.rocks I share tools, guides, and thoughts on AI and automation.
               </p>
 
               <div className="flex items-center justify-center sm:justify-start gap-3 pt-2">
