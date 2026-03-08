@@ -35,7 +35,7 @@ const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResult
         });
 
       try {
-        return await withTimeout(sdkPromise, 7000);
+        return await withTimeout(Promise.resolve(sdkPromise), 7000);
       } catch {
         return await fetchPublicRows<any>("tools?select=*&order=name.asc");
       }

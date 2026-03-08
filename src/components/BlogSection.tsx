@@ -27,7 +27,7 @@ const BlogSection = ({ searchQuery = "", onResultCount }: BlogSectionProps) => {
         });
 
       try {
-        return await withTimeout(sdkPromise, 7000);
+        return await withTimeout(Promise.resolve(sdkPromise), 7000);
       } catch {
         return await fetchPublicRows<any>("blog_posts?select=id,title,slug,excerpt,image_url,published_at&order=published_at.desc");
       }
