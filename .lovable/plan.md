@@ -1,30 +1,40 @@
 
 
-## Plan: Google-only login for your admin account
+# Endpoint.rocks – Redesign
 
-Since this project runs on Lovable Cloud, Google OAuth is managed automatically — no extra configuration needed.
+## Översikt
+En modern, mörk tech-sajt som fungerar som en kuraterad katalog över community-verktyg för Microsoft Intune. Med sökfunktion, kategorifilter, databasdriven innehållshantering och bloggvisning via RSS.
 
-### Changes
+---
 
-1. **Configure Social Auth** — Use the Configure Social Login tool to generate the Lovable Cloud Google auth module.
+## 1. Design & Visuellt tema
+- **Mörkt tema** med polerad, professionell känsla – mörka bakgrunder, subtila gradienter och glödande accentfärger (gult/guld som nuvarande logotyp)
+- Responsiv design som fungerar bra på desktop, tablet och mobil
+- Snygga kort-baserade layouter för verktygen istället för dagens knappar
+- Smooth hover-animationer och övergångar
 
-2. **Update `src/pages/Auth.tsx`** — Replace the email/password form with a single "Sign in with Google" button using `lovable.auth.signInWithOAuth("google")`. Remove email/password fields entirely.
+## 2. Startsida / Hero
+- Hero-sektion med "Endpoint.rocks"-branding och tagline: *"Your gateway to the best community tools for Microsoft Intune"*
+- Sökfält direkt i hero-sektionen så besökare kan börja söka direkt
+- Kategori-knappar/tabs under sökfältet för snabbfiltrering
 
-3. **Restrict to your account** — Since registration is already disabled and your account (`tobiasssandberg@gmail.com`) already has the admin role in `user_roles`, no one else can gain access even if they sign in with Google. The existing RLS policies and role checks will block unauthorized users.
+## 3. Verktygskatalog
+- **Sökfunktion** – Fritextsökning som filtrerar verktyg i realtid
+- **Kategorifilter** – Klickbara kategorier (Management Tools & Scripts, Solutions, Tools for Documentation, Application Management)
+- Varje verktyg visas som ett **kort** med namn, kort beskrivning och länk till GitHub/webbsida
+- Kategori-badge på varje kort
 
-4. **Optionally lock to your domain** — We can pass `hd` and `login_hint` params to Google to pre-fill your email and restrict to your domain:
-   ```typescript
-   lovable.auth.signInWithOAuth("google", {
-     redirect_uri: window.location.origin,
-     extraParams: { login_hint: "tobiasssandberg@gmail.com" }
-   });
-   ```
+## 4. Databas (Supabase/Lovable Cloud)
+- Tabell för **verktyg** med fält: namn, beskrivning, URL, kategori
+- Alla verktyg hämtas från databasen, så du kan lägga till/redigera via Supabase utan kodändring
+- Befintliga verktyg migreras in i databasen
 
-5. **Remove MFA verification** — Since Google handles 2FA on their end, the TOTP MFA flow (`/mfa-verify`, `MfaEnroll`) becomes redundant and can be removed or kept as optional.
+## 5. Blogg-sektion
+- Visa senaste blogginlägg genom att hämta RSS-flödet från endpoint.rocks/feed/
+- Visar titel, datum och eventuell bild
+- "Läs mer"-länk till den fullständiga artikeln på WordPress
 
-### Security
-
-- Admin access still enforced by `user_roles` table + `has_role()` function + RLS policies
-- Google provides its own 2FA/security layer
-- No new users can register (registration is disabled)
+## 6. Navigation & Footer
+- Sticky header med logotyp, navigation (Community Tools, Blogg) 
+- Footer med disclaimer-text och eventuella sociala länkar
 

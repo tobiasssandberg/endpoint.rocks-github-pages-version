@@ -11,12 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Trash2, Plus, LogOut, RefreshCw, KeyRound } from "lucide-react";
+import { Pencil, Trash2, Plus, LogOut, RefreshCw } from "lucide-react";
 import JsonImportButton from "@/components/JsonImportButton";
 import { toast } from "sonner";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import { isSafeUrl } from "@/lib/urlValidation";
-import MfaEnroll from "@/components/MfaEnroll";
+
 
 const CATEGORIES = [
   "Management Tools & Scripts",
@@ -59,21 +59,9 @@ const Admin = () => {
   const [blogEditId, setBlogEditId] = useState<string | null>(null);
   const [blogDialogOpen, setBlogDialogOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
-    // If user has MFA enrolled, enforce AAL2
-    if (user) {
-      supabase.auth.mfa.getAuthenticatorAssuranceLevel().then(({ data }) => {
-        if (data && data.nextLevel === "aal2" && data.currentLevel !== "aal2") {
-          navigate("/mfa-verify");
-        }
-      });
-    }
   }, [loading, user, navigate]);
 
   // Tools queries & mutations
@@ -202,29 +190,6 @@ const Admin = () => {
     }
   };
 
-  const handleChangePassword = async () => {
-    if (newPassword.length < 8) {
-      toast.error("Password must be at least 8 characters");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-    setChangingPassword(true);
-    try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) throw error;
-      toast.success("Password changed successfully!");
-      setPasswordDialogOpen(false);
-      setNewPassword("");
-      setConfirmPassword("");
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setChangingPassword(false);
-    }
-  };
 
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-background text-foreground">Loading...</div>;
 
@@ -251,25 +216,6 @@ const Admin = () => {
           <div className="flex items-center gap-3">
             <JsonImportButton />
             <span className="text-sm text-muted-foreground hidden sm:inline">{user?.email}</span>
-            <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="sm" onClick={() => { setNewPassword(""); setConfirmPassword(""); }}>
-                  <KeyRound className="mr-1 h-4 w-4" /> Change Password
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-sm">
-                <DialogHeader>
-                  <DialogTitle>Change Password</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <Input type="password" placeholder="New password (min 8 characters)" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-                  <Input type="password" placeholder="Confirm password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-                  <Button className="w-full" onClick={handleChangePassword} disabled={changingPassword}>
-                    {changingPassword ? "Saving..." : "Save New Password"}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
             <Button variant="ghost" size="sm" onClick={signOut}>
               <LogOut className="mr-1 h-4 w-4" /> Sign Out
             </Button>
@@ -282,7 +228,7 @@ const Admin = () => {
           <TabsList className="mb-6">
             <TabsTrigger value="blog">Blog ({blogPosts?.length ?? 0})</TabsTrigger>
             <TabsTrigger value="tools">Tools ({tools?.length ?? 0})</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
+            
           </TabsList>
 
           {/* TOOLS TAB */}
@@ -432,13 +378,6 @@ const Admin = () => {
             </div>
           </TabsContent>
 
-          {/* SECURITY TAB */}
-          <TabsContent value="security">
-            <div className="max-w-lg space-y-6">
-              <h2 className="text-2xl font-bold">Security Settings</h2>
-              <MfaEnroll />
-            </div>
-          </TabsContent>
         </Tabs>
       </main>
     </div>
