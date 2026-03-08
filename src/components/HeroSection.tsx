@@ -63,11 +63,11 @@ const HeroSection = ({ searchQuery, onSearchChange, toolCount = 0, blogCount = 0
                 </span>
               )}
               {isFocused && (
-                <span className="ml-2 text-muted-foreground/60">· Press Escape to clear</span>
+                <span className="ml-2 animate-fade-in text-muted-foreground/60">· Press Escape to clear</span>
               )}
             </p>
           ) : isFocused ? (
-            <p className="mt-3 text-xs text-muted-foreground/40">
+            <p className="mt-3 animate-fade-in text-xs text-muted-foreground/40">
               Press <kbd className="rounded border border-border/50 px-1.5 py-0.5 font-mono text-[10px]">Esc</kbd> to clear
             </p>
           ) : null}
