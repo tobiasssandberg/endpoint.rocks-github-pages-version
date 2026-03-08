@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchPublicRows, withTimeout } from "@/lib/publicData";
 import { ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,16 +21,47 @@ interface ToolCatalogProps {
 }
 
 const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResultCount }: ToolCatalogProps) => {
-  const { data: tools = [], isLoading, isError, error } = useQuery({
-    queryKey: ["tools"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("tools").select("*").order("name");
-      if (error) throw error;
-      return data ?? [];
-    },
-    retry: 1,
-    refetchOnWindowFocus: false,
-  });
+  const [tools, setTools] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadTools = async () => {
+      setIsLoading(true);
+      setErrorMessage(null);
+
+      try {
+        const sdkPromise = supabase
+          .from("tools")
+          .select("*")
+          .order("name")
+          .then(({ data, error }) => {
+            if (error) throw error;
+            return data ?? [];
+          });
+
+        let rows: any[];
+        try {
+          rows = await withTimeout(Promise.resolve(sdkPromise), 7000);
+        } catch {
+          rows = await fetchPublicRows<any>("tools?select=*&order=name.asc");
+        }
+
+        if (active) setTools(rows);
+      } catch (error) {
+        if (active) setErrorMessage(error instanceof Error ? error.message : "Unknown error");
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    };
+
+    loadTools();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filtered = tools.filter((tool) => {
     const matchesCategory = selectedCategory === "All" || tool.category === selectedCategory;
@@ -85,10 +116,9 @@ const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResult
               <Skeleton key={i} className="h-40 rounded-xl" />
             ))}
           </div>
-        ) : isError ? (
+        ) : errorMessage ? (
           <p className="py-12 text-center text-muted-foreground">
-            Kunde inte hämta verktyg just nu. Ladda om sidan och försök igen.
-            {error instanceof Error ? ` (${error.message})` : ""}
+            Kunde inte hämta verktyg just nu. Ladda om sidan och försök igen. ({errorMessage})
           </p>
         ) : filtered.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
