@@ -24,13 +24,13 @@ const Index = () => {
           toolCount={toolCount}
           blogCount={blogCount}
         />
+        <BlogSection searchQuery={searchQuery} onResultCount={handleBlogCount} />
         <ToolCatalog
           searchQuery={searchQuery}
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
           onResultCount={handleToolCount}
         />
-        <BlogSection searchQuery={searchQuery} onResultCount={handleBlogCount} />
       </main>
       <Footer />
     </div>
