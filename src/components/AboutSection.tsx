@@ -8,7 +8,7 @@ const AboutSection = () => {
         <div className="rounded-lg border bg-card text-card-foreground p-8">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             <Avatar className="h-24 w-24 shrink-0">
-              <AvatarImage src="" alt="Tobias Sandberg" />
+              <AvatarImage src="https://avatars.githubusercontent.com/u/43400481?v=4" alt="Tobias Sandberg" />
               <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
                 TS
               </AvatarFallback>
