@@ -17,7 +17,7 @@ const AboutSection = () => {
             <div className="text-center sm:text-left space-y-3">
               <h2 className="text-2xl font-bold text-foreground">Tobias Sandberg</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Principal Engineer at Xenit AB in Gothenburg, Sweden. Passionate about AI tools, automation, and sharing useful resources here on Endpoint.rocks.
+                Principal Engineer at Xenit AB in Gothenburg, Sweden. Passionate about Microsoft Intune, automation and sharing useful resources here on Endpoint.rocks.
               </p>
 
               <div className="flex items-center justify-center sm:justify-start gap-3 pt-2">
