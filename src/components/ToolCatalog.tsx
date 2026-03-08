@@ -127,7 +127,7 @@ const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResult
             {filtered.map((tool) => (
               <a
                 key={tool.id}
-                href={tool.url}
+                href={isSafeUrl(tool.url) ? tool.url : "#"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group relative flex flex-col rounded-xl border border-border/50 bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
