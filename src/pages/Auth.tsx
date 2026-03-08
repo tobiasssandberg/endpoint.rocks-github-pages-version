@@ -1,51 +1,34 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { lovable } from "@/integrations/lovable/index";
 
 const Auth = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
   useEffect(() => {
     if (user) {
-      // Check if user has MFA enrolled — if so, check AAL level
-      supabase.auth.mfa.getAuthenticatorAssuranceLevel().then(({ data }) => {
-        if (data && data.nextLevel === "aal2" && data.currentLevel !== "aal2") {
-          navigate("/mfa-verify");
-        } else {
-          navigate("/admin");
-        }
-      });
+      navigate("/admin");
     }
   }, [user, navigate]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGoogleSignIn = async () => {
     setLoading(true);
-
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+      extraParams: {
+        login_hint: "tobiasssandberg@gmail.com",
+      },
+    });
     if (error) {
-      toast.error(error.message);
+      toast.error(error.message || "Sign in failed");
       setLoading(false);
-      return;
     }
-
-    // After sign in, check if MFA is required
-    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (aalData && aalData.nextLevel === "aal2" && aalData.currentLevel !== "aal2") {
-      navigate("/mfa-verify");
-    } else {
-      navigate("/admin");
-    }
-    setLoading(false);
   };
 
   return (
@@ -61,26 +44,13 @@ const Auth = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-          />
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Loading..." : "Sign In"}
-          </Button>
-        </form>
+        <Button
+          onClick={handleGoogleSignIn}
+          className="w-full"
+          disabled={loading}
+        >
+          {loading ? "Redirecting..." : "Sign in with Google"}
+        </Button>
 
         <div className="text-center">
           <button
