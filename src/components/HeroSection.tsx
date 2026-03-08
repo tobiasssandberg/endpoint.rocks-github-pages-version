@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Search, Github, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
@@ -10,6 +11,7 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({ searchQuery, onSearchChange, toolCount = 0, blogCount = 0 }: HeroSectionProps) => {
+  const [isFocused, setIsFocused] = useState(false);
   const isSearching = searchQuery.trim().length > 0;
   const totalResults = toolCount + blogCount;
 
