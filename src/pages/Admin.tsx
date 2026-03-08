@@ -66,14 +66,6 @@ const Admin = () => {
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
-    // If user has MFA enrolled, enforce AAL2
-    if (user) {
-      supabase.auth.mfa.getAuthenticatorAssuranceLevel().then(({ data }) => {
-        if (data && data.nextLevel === "aal2" && data.currentLevel !== "aal2") {
-          navigate("/mfa-verify");
-        }
-      });
-    }
   }, [loading, user, navigate]);
 
   // Tools queries & mutations
