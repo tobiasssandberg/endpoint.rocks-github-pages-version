@@ -21,10 +21,12 @@ const HeroSection = ({ searchQuery, onSearchChange, toolCount = 0, blogCount = 0
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         searchRef.current?.focus();
+        searchRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       }
       if (e.key === "/" && !["INPUT", "TEXTAREA", "SELECT"].includes((e.target as HTMLElement).tagName)) {
         e.preventDefault();
         searchRef.current?.focus();
+        searchRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     };
     document.addEventListener("keydown", handleGlobalKeyDown);
