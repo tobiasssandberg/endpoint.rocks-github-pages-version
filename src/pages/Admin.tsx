@@ -238,6 +238,7 @@ const Admin = () => {
             <span className="ml-2 rounded bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">Admin</span>
           </button>
           <div className="flex items-center gap-3">
+            <JsonImportButton />
             <span className="text-sm text-muted-foreground hidden sm:inline">{user?.email}</span>
             <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
               <DialogTrigger asChild>
