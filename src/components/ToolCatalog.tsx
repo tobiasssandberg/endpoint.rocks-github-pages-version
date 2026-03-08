@@ -39,6 +39,14 @@ const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResult
     return matchesCategory && matchesSearch;
   });
 
+  useEffect(() => {
+    if (searchQuery && filtered) {
+      onResultCount?.(filtered.length);
+    } else if (!searchQuery) {
+      onResultCount?.(0);
+    }
+  }, [filtered?.length, searchQuery, onResultCount]);
+
   return (
     <section id="tools" className="py-16">
       <div className="container mx-auto px-4">

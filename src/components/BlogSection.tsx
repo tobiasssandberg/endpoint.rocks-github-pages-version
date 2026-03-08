@@ -35,6 +35,14 @@ const BlogSection = ({ searchQuery = "", onResultCount }: BlogSectionProps) => {
     );
   });
 
+  useEffect(() => {
+    if (isSearching && posts) {
+      onResultCount?.(posts.length);
+    } else if (!isSearching) {
+      onResultCount?.(0);
+    }
+  }, [posts?.length, isSearching, onResultCount]);
+
   const displayPosts = isSearching ? posts : posts?.slice(0, 3);
 
   return (
