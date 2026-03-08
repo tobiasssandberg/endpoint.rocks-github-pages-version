@@ -203,7 +203,7 @@ const Admin = () => {
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
-      toast.success("Lösenordet har ändrats!");
+      toast.success("Password changed successfully!");
       setPasswordDialogOpen(false);
       setNewPassword("");
       setConfirmPassword("");
