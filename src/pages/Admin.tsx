@@ -249,8 +249,8 @@ const Admin = () => {
                   <DialogTitle>Change Password</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
-                  <Input type="password" placeholder="Nytt lösenord (minst 8 tecken)" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-                  <Input type="password" placeholder="Bekräfta lösenord" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                  <Input type="password" placeholder="New password (min 8 characters)" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                  <Input type="password" placeholder="Confirm password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
                   <Button className="w-full" onClick={handleChangePassword} disabled={changingPassword}>
                     {changingPassword ? "Sparar..." : "Spara nytt lösenord"}
                   </Button>
