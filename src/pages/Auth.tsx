@@ -4,7 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+
+const isLovableDomain = () => {
+  const host = window.location.hostname;
+  return host.endsWith(".lovable.app") || host.endsWith(".lovableproject.com");
+};
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -19,12 +25,26 @@ const Auth = () => {
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
-    const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (error) {
-      toast.error(error.message || "Sign in failed");
-      setLoading(false);
+
+    if (isLovableDomain()) {
+      const { error } = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (error) {
+        toast.error(error.message || "Sign in failed");
+        setLoading(false);
+      }
+    } else {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (error) {
+        toast.error(error.message || "Sign in failed");
+        setLoading(false);
+      }
     }
   };
 
