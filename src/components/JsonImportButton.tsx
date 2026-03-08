@@ -4,11 +4,14 @@ import { Upload } from "lucide-react";
 import { toast } from "sonner";
 
 interface JsonImportButtonProps {
+  /** Called with the parsed array of items */
   onImport: (data: any[]) => Promise<void>;
+  /** Key to extract from a wrapper object, e.g. "tools" or "blog_posts" */
+  dataKey?: string;
   label?: string;
 }
 
-const JsonImportButton = ({ onImport, label = "Import JSON" }: JsonImportButtonProps) => {
+const JsonImportButton = ({ onImport, dataKey, label = "Import JSON" }: JsonImportButtonProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
 
@@ -20,7 +23,22 @@ const JsonImportButton = ({ onImport, label = "Import JSON" }: JsonImportButtonP
       setImporting(true);
       const text = await file.text();
       const parsed = JSON.parse(text);
-      const items = Array.isArray(parsed) ? parsed : [parsed];
+
+      let items: any[];
+      if (Array.isArray(parsed)) {
+        items = parsed;
+      } else if (dataKey && Array.isArray(parsed[dataKey])) {
+        items = parsed[dataKey];
+      } else {
+        // Try to find the first array property
+        const firstArrayKey = Object.keys(parsed).find((k) => Array.isArray(parsed[k]));
+        if (firstArrayKey) {
+          items = parsed[firstArrayKey];
+        } else {
+          items = [parsed];
+        }
+      }
+
       if (items.length === 0) {
         toast.error("JSON file is empty");
         return;
