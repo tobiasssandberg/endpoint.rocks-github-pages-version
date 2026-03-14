@@ -280,9 +280,6 @@ const Admin = () => {
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-2xl font-bold">Manage Blog</h2>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={syncFromRSS} disabled={syncing}>
-                  <RefreshCw className={`mr-1 h-4 w-4 ${syncing ? "animate-spin" : ""}`} /> Sync from RSS
-                </Button>
                 <Dialog open={blogDialogOpen} onOpenChange={setBlogDialogOpen}>
                   <DialogTrigger asChild>
                     <Button onClick={() => { setBlogForm(emptyBlogForm); setBlogEditId(null); setBlogDialogOpen(true); }}>
