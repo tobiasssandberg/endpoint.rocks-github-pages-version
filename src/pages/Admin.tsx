@@ -166,30 +166,6 @@ const Admin = () => {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const syncFromRSS = async () => {
-    setSyncing(true);
-    try {
-      // Get the user's session JWT for authenticated admin access
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (!currentSession?.access_token) {
-        throw new Error("You must be logged in to sync");
-      }
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rss-feed?migrate=true`,
-        { headers: { Authorization: `Bearer ${currentSession.access_token}` } }
-      );
-      const result = await res.json();
-      if (result.error) throw new Error(result.error);
-      queryClient.invalidateQueries({ queryKey: ["admin-blog"] });
-      queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
-      toast.success(`Synced ${result.migrated} posts from RSS`);
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setSyncing(false);
-    }
-  };
-
 
   // Redirect non-admin users away from admin page
   useEffect(() => {
