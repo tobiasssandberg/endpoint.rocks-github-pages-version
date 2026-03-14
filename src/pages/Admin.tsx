@@ -367,7 +367,7 @@ const Admin = () => {
                         <div className="flex items-center gap-2">
                           {post.title}
                           {!post.published_at && (
-                            <Badge variant="outline" className="text-xs border-orange-500 text-orange-600">Draft</Badge>
+                            <Badge variant="outline" className="text-xs border-[hsl(var(--destructive))] text-[hsl(var(--destructive))]">Draft</Badge>
                           )}
                         </div>
                       </TableCell>
