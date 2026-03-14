@@ -321,12 +321,29 @@ const Admin = () => {
                       <Input placeholder="Title" value={blogForm.title} onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })} required />
                       <Input placeholder="Slug (url-friendly)" value={blogForm.slug} onChange={(e) => setBlogForm({ ...blogForm, slug: e.target.value })} required />
                       <Input placeholder="Image URL (optional)" value={blogForm.image_url} onChange={(e) => setBlogForm({ ...blogForm, image_url: e.target.value })} />
-                      <Textarea placeholder="Excerpt (short summary)" value={blogForm.excerpt} onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })} rows={2} required />
+                      <Textarea placeholder="Excerpt (short summary)" value={blogForm.excerpt} onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })} rows={2} />
                       <MarkdownEditor value={blogForm.content} onChange={(v) => setBlogForm({ ...blogForm, content: v })} />
-                      <Input type="datetime-local" value={blogForm.published_at} onChange={(e) => setBlogForm({ ...blogForm, published_at: e.target.value })} />
-                      <Button type="submit" className="w-full" disabled={saveBlogMutation.isPending}>
-                        {saveBlogMutation.isPending ? "Saving..." : "Save"}
-                      </Button>
+                      <div>
+                        <label className="text-sm text-muted-foreground">Publish date (leave empty for draft)</label>
+                        <Input type="datetime-local" value={blogForm.published_at} onChange={(e) => setBlogForm({ ...blogForm, published_at: e.target.value })} />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="flex-1"
+                          disabled={saveBlogMutation.isPending}
+                          onClick={() => {
+                            const draft = { ...blogForm, published_at: "" };
+                            saveBlogMutation.mutate(blogEditId ? { ...draft, id: blogEditId } : draft);
+                          }}
+                        >
+                          {saveBlogMutation.isPending ? "Saving..." : "Save as Draft"}
+                        </Button>
+                        <Button type="submit" className="flex-1" disabled={saveBlogMutation.isPending}>
+                          {saveBlogMutation.isPending ? "Saving..." : blogForm.published_at ? "Publish" : "Publish Now"}
+                        </Button>
+                      </div>
                     </form>
                   </DialogContent>
                 </Dialog>
