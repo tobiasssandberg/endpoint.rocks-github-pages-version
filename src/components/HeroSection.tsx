@@ -60,61 +60,61 @@ const HeroSection = ({ searchQuery, onSearchChange, toolCount = 0, blogCount = 0
               onChange={(e) => onSearchChange(e.target.value)}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
-              onKeyDown={(e) => { if (e.key === "Escape") { onSearchChange(""); (e.target as HTMLInputElement).blur(); } }}
-              className="h-12 rounded-xl border-border/50 bg-card pl-10 pr-10 text-base shadow-lg shadow-primary/5 placeholder:text-muted-foreground focus-visible:ring-primary"
-            />
-            {isSearching && (
-              <button
-                onClick={() => onSearchChange("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-muted-foreground transition-colors hover:text-foreground"
-                aria-label="Clear search"
-              >
+              onKeyDown={(e) => {if (e.key === "Escape") {onSearchChange("");(e.target as HTMLInputElement).blur();}}}
+              className="h-12 rounded-xl border-border/50 bg-card pl-10 pr-10 text-base shadow-lg shadow-primary/5 placeholder:text-muted-foreground focus-visible:ring-primary" />
+            
+            {isSearching &&
+            <button
+              onClick={() => onSearchChange("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+              aria-label="Clear search">
+              
                 <X className="h-4 w-4" />
               </button>
-            )}
+            }
           </div>
-          {isSearching ? (
-            <p className="mt-3 text-sm text-muted-foreground">
+          {isSearching ?
+          <p className="mt-3 text-sm text-muted-foreground">
               Found <span className="font-medium text-foreground">{totalResults}</span> {totalResults === 1 ? "result" : "results"}
-              {totalResults > 0 && (
-                <span className="text-muted-foreground">
+              {totalResults > 0 &&
+            <span className="text-muted-foreground">
                   {" "}— {toolCount} {toolCount === 1 ? "tool" : "tools"}, {blogCount} {blogCount === 1 ? "post" : "posts"}
                 </span>
-              )}
-              {isFocused && (
-                <span className="ml-2 animate-fade-in text-muted-foreground/60">· Press Escape to clear</span>
-              )}
-            </p>
-          ) : isFocused ? (
-            <p className="mt-3 animate-fade-in text-xs text-muted-foreground/40">
+            }
+              {isFocused &&
+            <span className="ml-2 animate-fade-in text-muted-foreground/60">· Press Escape to clear</span>
+            }
+            </p> :
+          isFocused ?
+          <p className="mt-3 animate-fade-in text-xs text-muted-foreground/40">
               Press <kbd className="rounded border border-border/50 px-1.5 py-0.5 font-mono text-[10px]">Esc</kbd> to clear
-            </p>
-          ) : (
-            <p className="mt-3 text-xs text-muted-foreground/30">
+            </p> :
+
+          <p className="mt-3 text-xs text-muted-foreground/30">
               Press <kbd className="rounded border border-border/50 px-1.5 py-0.5 font-mono text-[10px]">/</kbd> or <kbd className="rounded border border-border/50 px-1.5 py-0.5 font-mono text-[10px]">⌘K</kbd> to search
             </p>
-          )}
+          }
         </div>
 
         <Link
           to="/blog"
-          className="mt-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
-        >
+          className="mt-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary">
+          
           📝 Read the latest blog posts →
         </Link>
         <div className="mt-3">
           <a
-            href="https://github.com/tobiasssandberg"
+
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
-          >
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary" href="https://github.com/endpointrocks">
+            
             <Github className="h-4 w-4" /> GitHub →
           </a>
         </div>
       </div>
-    </section>
-  );
+    </section>);
+
 };
 
 export default HeroSection;
