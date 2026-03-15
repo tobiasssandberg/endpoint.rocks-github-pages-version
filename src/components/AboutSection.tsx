@@ -40,7 +40,7 @@ const AboutSection = () => {
                   <Linkedin size={20} />
                 </a>
                 <a
-                  href="https://x.com/Hillihappo"
+                  href="https://x.com/tobiasssandberg"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-foreground transition-colors"
