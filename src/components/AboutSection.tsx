@@ -22,7 +22,7 @@ const AboutSection = () => {
 
               <div className="flex items-center justify-center sm:justify-start gap-3 pt-2">
                 <a
-                  href="https://github.com/hillihappo"
+                  href="https://github.com/tobiasssandberg"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-foreground transition-colors"
