@@ -104,7 +104,7 @@ const HeroSection = ({ searchQuery, onSearchChange, toolCount = 0, blogCount = 0
         </Link>
         <div className="mt-3">
           <a
-            href="https://github.com/hillihappo"
+            href="https://github.com/tobiasssandberg"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
