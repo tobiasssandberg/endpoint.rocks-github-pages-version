@@ -55,7 +55,7 @@ const HeroSection = ({ searchQuery, onSearchChange, toolCount = 0, blogCount = 0
             <Input
               ref={searchRef}
               type="text"
-              placeholder="Search tools and blog posts..."
+              placeholder="Search blog posts and tools..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               onFocus={() => setIsFocused(true)}
