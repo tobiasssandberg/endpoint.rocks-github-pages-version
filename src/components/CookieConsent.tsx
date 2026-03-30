@@ -38,7 +38,7 @@ export function getConsent(): string | null {
 }
 
 export function initGA() {
-  if (getConsent() === "accepted") loadGA();
+  loadGA();
 }
 
 const CookieConsent = () => {
