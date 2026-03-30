@@ -60,7 +60,7 @@ const CookieConsent = () => {
       <p className="text-sm text-muted-foreground mb-3">
         This website uses Google Analytics
       </p>
-      <Button variant="outline" size="sm" className="w-full" onClick={accept}>
+      <Button variant="outline" size="sm" className="w-full" onClick={dismiss}>
         Got it!
       </Button>
     </div>
