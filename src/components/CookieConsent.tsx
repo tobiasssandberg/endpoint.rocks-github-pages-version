@@ -63,21 +63,13 @@ const CookieConsent = () => {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card p-4 shadow-lg animate-in slide-in-from-bottom-4">
-      <div className="container mx-auto flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-        <p className="text-sm text-muted-foreground text-center sm:text-left">
-          We use cookies to analyze site traffic via Google Analytics.{" "}
-          <span className="hidden sm:inline">You can accept or decline tracking cookies.</span>
-        </p>
-        <div className="flex gap-2 shrink-0">
-          <Button variant="outline" size="sm" onClick={decline}>
-            Decline
-          </Button>
-          <Button size="sm" onClick={accept}>
-            Accept
-          </Button>
-        </div>
-      </div>
+    <div className="fixed bottom-4 left-4 z-50 max-w-xs rounded-lg border border-border bg-card p-4 shadow-lg animate-in slide-in-from-bottom-4">
+      <p className="text-sm text-muted-foreground mb-3">
+        This website uses Google Analytics
+      </p>
+      <Button variant="outline" size="sm" className="w-full" onClick={accept}>
+        Got it!
+      </Button>
     </div>
   );
 };
