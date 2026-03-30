@@ -38,7 +38,7 @@ export function getConsent(): string | null {
 }
 
 export function initGA() {
-  if (getConsent() === "accepted") loadGA();
+  loadGA();
 }
 
 const CookieConsent = () => {
@@ -48,15 +48,8 @@ const CookieConsent = () => {
     if (!getConsent()) setVisible(true);
   }, []);
 
-  const accept = useCallback(() => {
+  const dismiss = useCallback(() => {
     localStorage.setItem("cookie-consent", "accepted");
-    loadGA();
-    setVisible(false);
-  }, []);
-
-  const decline = useCallback(() => {
-    localStorage.setItem("cookie-consent", "declined");
-    removeGACookies();
     setVisible(false);
   }, []);
 
@@ -67,7 +60,7 @@ const CookieConsent = () => {
       <p className="text-sm text-muted-foreground mb-3">
         This website uses Google Analytics
       </p>
-      <Button variant="outline" size="sm" className="w-full" onClick={accept}>
+      <Button variant="outline" size="sm" className="w-full" onClick={dismiss}>
         Got it!
       </Button>
     </div>
