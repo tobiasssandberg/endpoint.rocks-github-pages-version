@@ -48,15 +48,8 @@ const CookieConsent = () => {
     if (!getConsent()) setVisible(true);
   }, []);
 
-  const accept = useCallback(() => {
+  const dismiss = useCallback(() => {
     localStorage.setItem("cookie-consent", "accepted");
-    loadGA();
-    setVisible(false);
-  }, []);
-
-  const decline = useCallback(() => {
-    localStorage.setItem("cookie-consent", "declined");
-    removeGACookies();
     setVisible(false);
   }, []);
 
