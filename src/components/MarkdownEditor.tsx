@@ -121,10 +121,7 @@ const MarkdownEditor = ({ value, onChange }: MarkdownEditorProps) => {
           commands.divider,
           imageUploadCommand,
         ]}
-        onCommandsFilter={(cmd) => {
-          // Store textApi reference when available
-          return cmd;
-        }}
+        commandsFilter={(cmd) => cmd}
         textareaProps={{
           onPaste: (e: any) => handlePaste(e),
         }}
