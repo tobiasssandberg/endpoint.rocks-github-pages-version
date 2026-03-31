@@ -333,7 +333,6 @@ const Admin = () => {
                           </PopoverContent>
                         </Popover>
                       </div>
-                      </div>
                       <div className="flex gap-2">
                         <Button
                           type="button"
