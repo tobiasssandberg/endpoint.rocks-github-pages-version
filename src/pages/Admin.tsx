@@ -301,37 +301,57 @@ const Admin = () => {
                       <Textarea placeholder="Excerpt (short summary)" value={blogForm.excerpt} onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })} rows={2} />
                       <MarkdownEditor value={blogForm.content} onChange={(v) => setBlogForm({ ...blogForm, content: v })} />
                       <div>
-                        <label className="text-sm text-muted-foreground">Publish date (leave empty for draft)</label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal mt-1",
-                                !blogForm.published_at && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {blogForm.published_at
-                                ? format(parseISO(blogForm.published_at), "PPP")
-                                : "Pick a date"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={blogForm.published_at ? parseISO(blogForm.published_at) : undefined}
-                              onSelect={(date) =>
-                                setBlogForm({
-                                  ...blogForm,
-                                  published_at: date ? date.toISOString().slice(0, 16) : "",
-                                })
+                        <label className="text-sm text-muted-foreground">Publish date & time (leave empty for draft)</label>
+                        <div className="flex gap-2 mt-1">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "flex-1 justify-start text-left font-normal",
+                                  !blogForm.published_at && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {blogForm.published_at
+                                  ? format(parseISO(blogForm.published_at), "PPP")
+                                  : "Pick a date"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={blogForm.published_at ? parseISO(blogForm.published_at) : undefined}
+                                onSelect={(date) => {
+                                  if (!date) {
+                                    setBlogForm({ ...blogForm, published_at: "" });
+                                    return;
+                                  }
+                                  const existing = blogForm.published_at ? parseISO(blogForm.published_at) : new Date();
+                                  date.setHours(existing.getHours(), existing.getMinutes());
+                                  setBlogForm({ ...blogForm, published_at: date.toISOString().slice(0, 16) });
+                                }}
+                                initialFocus
+                                className={cn("p-3 pointer-events-auto")}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <Input
+                            type="time"
+                            className="w-28"
+                            value={blogForm.published_at ? blogForm.published_at.slice(11, 16) : ""}
+                            onChange={(e) => {
+                              const time = e.target.value;
+                              if (!blogForm.published_at) {
+                                const today = new Date();
+                                const dateStr = today.toISOString().slice(0, 10);
+                                setBlogForm({ ...blogForm, published_at: `${dateStr}T${time}` });
+                              } else {
+                                setBlogForm({ ...blogForm, published_at: blogForm.published_at.slice(0, 11) + time });
                               }
-                              initialFocus
-                              className={cn("p-3 pointer-events-auto")}
-                            />
-                          </PopoverContent>
-                        </Popover>
+                            }}
+                          />
+                        </div>
                       </div>
                       <div className="flex gap-2">
                         <Button
