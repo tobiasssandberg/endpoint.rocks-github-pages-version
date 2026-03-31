@@ -28,7 +28,7 @@ const RouteChangeTracker = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (getConsent() === "accepted" && window.gtag) {
+    if (window.gtag) {
       window.gtag("config", "G-ETF88872KS", {
         page_path: location.pathname + location.search,
       });
