@@ -1,12 +1,14 @@
 import { useState, useCallback } from "react";
-import { Menu, Settings } from "lucide-react";
+import { Menu, Settings, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const { isAdmin } = useAuth();
+  const { theme, toggle: toggleTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -46,6 +48,9 @@ const Header = () => {
               <Settings className="h-3.5 w-3.5" /> Admin
             </Link>
           )}
+          <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
         </nav>
 
         <Sheet open={open} onOpenChange={setOpen}>
@@ -70,6 +75,10 @@ const Header = () => {
                   <Settings className="h-4 w-4" /> Admin
                 </Link>
               )}
+              <button onClick={toggleTheme} className="text-left text-lg text-muted-foreground hover:text-foreground flex items-center gap-2">
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {theme === "dark" ? "Light mode" : "Dark mode"}
+              </button>
             </nav>
           </SheetContent>
         </Sheet>

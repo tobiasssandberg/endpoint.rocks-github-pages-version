@@ -147,6 +147,38 @@ const Admin = () => {
   useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
   useEffect(() => { if (!loading && user && !isAdmin) navigate("/"); }, [loading, user, isAdmin, navigate]);
 
+  // Fix: restore body overflow when leaving Admin (Radix Dialog may leave overflow:hidden)
+  useEffect(() => {
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  // Autosave blog draft every 30 seconds
+  const DRAFT_KEY = "blog-draft";
+  useEffect(() => {
+    // Restore draft on mount
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) {
+        const draft = JSON.parse(saved);
+        if (draft.blogForm) setBlogForm(draft.blogForm);
+        if (draft.blogTags) setBlogTags(draft.blogTags);
+        toast.info("Draft restored from autosave");
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    // Only autosave if there's content
+    if (!blogForm.title && !blogForm.content) return;
+    const timer = setInterval(() => {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ blogForm, blogTags }));
+        toast("Draft auto-saved", { duration: 1500 });
+      } catch {}
+    }, 30000);
+    return () => clearInterval(timer);
+  }, [blogForm, blogTags]);
+
   // Tools
   const { data: tools } = useQuery({
     queryKey: ["admin-tools"],
@@ -291,6 +323,7 @@ const Admin = () => {
       setBlogForm(emptyBlogForm);
       setBlogEditId(null);
       setBlogTags([]);
+      localStorage.removeItem("blog-draft");
     },
     onError: (e: Error) => toast.error(e.message),
   });
