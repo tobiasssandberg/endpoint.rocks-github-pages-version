@@ -577,10 +577,15 @@ const Admin = () => {
                       </CollapsibleContent>
                     </Collapsible>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
                       <Button type="button" variant="outline" size="sm" onClick={() => setPreviewOpen(true)}>
                         <Eye className="mr-1 h-4 w-4" /> Preview
                       </Button>
+                      {lastAutoSaved && (
+                        <span className="text-xs text-muted-foreground">
+                          Auto-saved {format(lastAutoSaved, "HH:mm:ss")}
+                        </span>
+                      )}
                       <div className="flex-1" />
                       <Button type="button" variant="outline" disabled={saveBlogMutation.isPending} onClick={() => submitBlog(true)}>
                         {saveBlogMutation.isPending ? "Saving..." : "Save as Draft"}
