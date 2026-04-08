@@ -30,20 +30,6 @@ const AnalyticsOverview = () => {
         throw new Error(err.error || `HTTP ${res.status}`);
       }
       return res.json();
-    },
-        {
-          headers: {
-            "Authorization": `Bearer ${session?.access_token ?? anonKey}`,
-            "apikey": anonKey,
-          },
-        }
-      );
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `HTTP ${res.status}`);
-      }
-      return res.json();
-    },
     retry: false,
   });
 
