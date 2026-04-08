@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Trash2, Plus, LogOut, CalendarIcon, GripVertical } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Pencil, Trash2, Plus, LogOut, CalendarIcon, GripVertical, Eye, ChevronDown, X, ImageIcon } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
@@ -24,21 +25,13 @@ import AdminDashboard from "@/components/admin/AdminDashboard";
 import ImageLibrary from "@/components/admin/ImageLibrary";
 import SiteSettings from "@/components/admin/SiteSettings";
 import AnalyticsOverview from "@/components/admin/AnalyticsOverview";
+import BlogPreview from "@/components/admin/BlogPreview";
+import ImagePicker from "@/components/admin/ImagePicker";
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
+  DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
+  arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -49,30 +42,23 @@ const CATEGORIES = [
   "Application Management",
 ];
 
-interface ToolForm {
-  name: string;
-  description: string;
-  url: string;
-  category: string;
-}
-
+interface ToolForm { name: string; description: string; url: string; category: string; }
 interface BlogForm {
-  title: string;
-  slug: string;
-  content: string;
-  excerpt: string;
-  image_url: string;
-  published_at: string;
+  title: string; slug: string; content: string; excerpt: string;
+  image_url: string; published_at: string;
+  meta_title: string; meta_description: string; og_image: string;
 }
 
 const emptyToolForm: ToolForm = { name: "", description: "", url: "", category: CATEGORIES[0] };
-const emptyBlogForm: BlogForm = { title: "", slug: "", content: "", excerpt: "", image_url: "", published_at: "" };
+const emptyBlogForm: BlogForm = {
+  title: "", slug: "", content: "", excerpt: "", image_url: "", published_at: "",
+  meta_title: "", meta_description: "", og_image: "",
+};
 
 // Sortable row component for tools
 const SortableToolRow = ({ tool, onEdit, onDelete }: { tool: any; onEdit: () => void; onDelete: () => void }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: tool.id });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
-
   return (
     <TableRow ref={setNodeRef} style={style}>
       <TableCell className="w-8">
@@ -95,6 +81,52 @@ const SortableToolRow = ({ tool, onEdit, onDelete }: { tool: any; onEdit: () => 
   );
 };
 
+// Tag input component
+const TagInput = ({ selectedTags, allTags, onChange }: { selectedTags: string[]; allTags: { id: string; name: string }[]; onChange: (tags: string[]) => void }) => {
+  const [input, setInput] = useState("");
+  const suggestions = allTags.filter((t) => !selectedTags.includes(t.name) && t.name.toLowerCase().includes(input.toLowerCase())).slice(0, 5);
+  const addTag = (name: string) => {
+    if (!selectedTags.includes(name)) onChange([...selectedTags, name]);
+    setInput("");
+  };
+  return (
+    <div className="space-y-1.5">
+      <label className="text-sm text-muted-foreground">Tags</label>
+      <div className="flex flex-wrap gap-1.5 mb-1.5">
+        {selectedTags.map((t) => (
+          <Badge key={t} variant="secondary" className="gap-1 pr-1">
+            {t}
+            <button type="button" onClick={() => onChange(selectedTags.filter((x) => x !== t))} className="ml-0.5 hover:text-destructive">
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        ))}
+      </div>
+      <div className="relative">
+        <Input
+          placeholder="Add tag..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && input.trim()) {
+              e.preventDefault();
+              addTag(input.trim());
+            }
+          }}
+        />
+        {input && suggestions.length > 0 && (
+          <div className="absolute z-50 mt-1 w-full rounded-md border border-border bg-popover p-1 shadow-md">
+            {suggestions.map((s) => (
+              <button key={s.id} type="button" onClick={() => addTag(s.name)}
+                className="w-full rounded px-2 py-1 text-left text-sm hover:bg-accent">{s.name}</button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -107,6 +139,10 @@ const Admin = () => {
   const [blogForm, setBlogForm] = useState<BlogForm>(emptyBlogForm);
   const [blogEditId, setBlogEditId] = useState<string | null>(null);
   const [blogDialogOpen, setBlogDialogOpen] = useState(false);
+  const [blogTags, setBlogTags] = useState<string[]>([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [imagePickerOpen, setImagePickerOpen] = useState(false);
+  const [imagePickerTarget, setImagePickerTarget] = useState<"image_url" | "og_image">("image_url");
 
   useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
   useEffect(() => { if (!loading && user && !isAdmin) navigate("/"); }, [loading, user, isAdmin, navigate]);
@@ -147,7 +183,6 @@ const Admin = () => {
     const oldIndex = tools.findIndex((t) => t.id === active.id);
     const newIndex = tools.findIndex((t) => t.id === over.id);
     const reordered = arrayMove(tools, oldIndex, newIndex);
-    // Optimistically update cache
     queryClient.setQueryData(["admin-tools"], reordered);
     reorderMutation.mutate(reordered.map((t, i) => ({ id: t.id, sort_order: i })));
   }, [tools, queryClient, reorderMutation]);
@@ -198,27 +233,64 @@ const Admin = () => {
     enabled: !!user && isAdmin,
   });
 
+  // All tags
+  const { data: allTags } = useQuery({
+    queryKey: ["blog-tags"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("blog_tags").select("*").order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!user && isAdmin,
+  });
+
+  // Load tags for a post when editing
+  const loadPostTags = async (postId: string) => {
+    const { data } = await supabase
+      .from("blog_post_tags")
+      .select("tag_id, blog_tags(name)")
+      .eq("post_id", postId);
+    return (data ?? []).map((r: any) => r.blog_tags?.name).filter(Boolean);
+  };
+
   const saveBlogMutation = useMutation({
-    mutationFn: async (post: BlogForm & { id?: string }) => {
-      const payload = {
+    mutationFn: async (post: BlogForm & { id?: string; tags: string[] }) => {
+      const payload: any = {
         title: post.title, slug: post.slug, content: post.content,
         excerpt: post.excerpt, image_url: post.image_url || null, published_at: post.published_at || null,
+        meta_title: post.meta_title || null, meta_description: post.meta_description || null, og_image: post.og_image || null,
       };
+      let postId = post.id;
       if (post.id) {
         const { error } = await supabase.from("blog_posts").update(payload).eq("id", post.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("blog_posts").insert(payload);
+        const { data, error } = await supabase.from("blog_posts").insert(payload).select("id").single();
         if (error) throw error;
+        postId = data.id;
+      }
+
+      // Save tags
+      // 1. Delete existing
+      await supabase.from("blog_post_tags").delete().eq("post_id", postId!);
+      // 2. Upsert tag names and link
+      for (const tagName of post.tags) {
+        const slug = tagName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        const { data: tagData } = await supabase.from("blog_tags").upsert({ name: tagName, slug }, { onConflict: "slug" }).select("id").single();
+        if (tagData) {
+          await supabase.from("blog_post_tags").insert({ post_id: postId!, tag_id: tagData.id });
+        }
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-blog"] });
       queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["blog-tags"] });
       toast.success(blogEditId ? "Post updated" : "Post added");
       setBlogDialogOpen(false);
       setBlogForm(emptyBlogForm);
       setBlogEditId(null);
+      setBlogTags([]);
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -235,6 +307,28 @@ const Admin = () => {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const openBlogEdit = async (post: any) => {
+    setBlogForm({
+      title: post.title, slug: post.slug, content: post.content,
+      excerpt: post.excerpt, image_url: post.image_url || "", published_at: post.published_at ? post.published_at.slice(0, 16) : "",
+      meta_title: post.meta_title || "", meta_description: post.meta_description || "", og_image: post.og_image || "",
+    });
+    setBlogEditId(post.id);
+    const tags = await loadPostTags(post.id);
+    setBlogTags(tags);
+    setBlogDialogOpen(true);
+  };
+
+  const submitBlog = (draft: boolean) => {
+    const slug = blogForm.slug || blogForm.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `draft-${Date.now()}`;
+    const pub = {
+      ...blogForm, slug,
+      published_at: draft ? "" : (blogForm.published_at || new Date().toISOString().slice(0, 16)),
+      tags: blogTags,
+    };
+    saveBlogMutation.mutate(blogEditId ? { ...pub, id: blogEditId } : pub);
+  };
 
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-background text-foreground">Loading...</div>;
   if (!user || !isAdmin) return null;
@@ -331,18 +425,39 @@ const Admin = () => {
               <h2 className="text-2xl font-bold">Manage Blog</h2>
               <Dialog open={blogDialogOpen} onOpenChange={setBlogDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => { setBlogForm(emptyBlogForm); setBlogEditId(null); setBlogDialogOpen(true); }}>
+                  <Button onClick={() => { setBlogForm(emptyBlogForm); setBlogEditId(null); setBlogTags([]); setBlogDialogOpen(true); }}>
                     <Plus className="mr-1 h-4 w-4" /> New Post
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
                   <DialogHeader><DialogTitle>{blogEditId ? "Edit Post" : "New Post"}</DialogTitle></DialogHeader>
-                  <form onSubmit={(e) => { e.preventDefault(); const slug = blogForm.slug || blogForm.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `draft-${Date.now()}`; const pub = { ...blogForm, slug, published_at: blogForm.published_at || new Date().toISOString().slice(0, 16) }; saveBlogMutation.mutate(blogEditId ? { ...pub, id: blogEditId } : pub); }} className="space-y-4">
+                  <form onSubmit={(e) => { e.preventDefault(); submitBlog(false); }} className="space-y-4">
                     <Input placeholder="Title" value={blogForm.title} onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })} required />
                     <Input placeholder="Slug (auto-generated if empty)" value={blogForm.slug} onChange={(e) => setBlogForm({ ...blogForm, slug: e.target.value })} />
-                    <Input placeholder="Image URL (optional)" value={blogForm.image_url} onChange={(e) => setBlogForm({ ...blogForm, image_url: e.target.value })} />
+
+                    {/* Cover image */}
+                    <div className="space-y-1.5">
+                      <label className="text-sm text-muted-foreground">Cover image</label>
+                      <div className="flex gap-2 items-center">
+                        {blogForm.image_url && (
+                          <img src={blogForm.image_url} alt="Cover" className="h-12 w-12 rounded object-cover border border-border/50" />
+                        )}
+                        <Button type="button" variant="outline" size="sm" onClick={() => { setImagePickerTarget("image_url"); setImagePickerOpen(true); }}>
+                          <ImageIcon className="mr-1 h-4 w-4" /> {blogForm.image_url ? "Change" : "Pick image"}
+                        </Button>
+                        {blogForm.image_url && (
+                          <Button type="button" variant="ghost" size="sm" onClick={() => setBlogForm({ ...blogForm, image_url: "" })}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
                     <Textarea placeholder="Excerpt" value={blogForm.excerpt} onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })} rows={2} />
                     <MarkdownEditor value={blogForm.content} onChange={(v) => setBlogForm({ ...blogForm, content: v })} />
+
+                    <TagInput selectedTags={blogTags} allTags={allTags ?? []} onChange={setBlogTags} />
+
                     <div>
                       <label className="text-sm text-muted-foreground">Publish date & time</label>
                       <div className="flex gap-2 mt-1">
@@ -383,16 +498,51 @@ const Admin = () => {
                         />
                       </div>
                     </div>
+
+                    {/* SEO section */}
+                    <Collapsible>
+                      <CollapsibleTrigger asChild>
+                        <Button type="button" variant="ghost" size="sm" className="w-full justify-between text-muted-foreground">
+                          SEO Settings <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-3 pt-2">
+                        <div>
+                          <label className="text-xs text-muted-foreground">Meta Title ({blogForm.meta_title.length}/60)</label>
+                          <Input placeholder={blogForm.title || "Meta title"} value={blogForm.meta_title}
+                            onChange={(e) => setBlogForm({ ...blogForm, meta_title: e.target.value })} maxLength={60} />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground">Meta Description ({blogForm.meta_description.length}/160)</label>
+                          <Textarea placeholder={blogForm.excerpt || "Meta description"} value={blogForm.meta_description}
+                            onChange={(e) => setBlogForm({ ...blogForm, meta_description: e.target.value })} maxLength={160} rows={2} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-muted-foreground">OG Image</label>
+                          <div className="flex gap-2 items-center">
+                            {blogForm.og_image && <img src={blogForm.og_image} alt="OG" className="h-10 w-16 rounded object-cover border border-border/50" />}
+                            <Button type="button" variant="outline" size="sm" onClick={() => { setImagePickerTarget("og_image"); setImagePickerOpen(true); }}>
+                              <ImageIcon className="mr-1 h-3 w-3" /> {blogForm.og_image ? "Change" : "Pick"}
+                            </Button>
+                            {blogForm.og_image && (
+                              <Button type="button" variant="ghost" size="sm" onClick={() => setBlogForm({ ...blogForm, og_image: "" })}>
+                                <X className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+
                     <div className="flex gap-2">
-                      <Button type="button" variant="outline" className="flex-1" disabled={saveBlogMutation.isPending}
-                        onClick={() => {
-                          const slug = blogForm.slug || blogForm.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `draft-${Date.now()}`;
-                          saveBlogMutation.mutate(blogEditId ? { ...blogForm, slug, published_at: "", id: blogEditId } : { ...blogForm, slug, published_at: "" });
-                        }}
-                      >
+                      <Button type="button" variant="outline" size="sm" onClick={() => setPreviewOpen(true)}>
+                        <Eye className="mr-1 h-4 w-4" /> Preview
+                      </Button>
+                      <div className="flex-1" />
+                      <Button type="button" variant="outline" disabled={saveBlogMutation.isPending} onClick={() => submitBlog(true)}>
                         {saveBlogMutation.isPending ? "Saving..." : "Save as Draft"}
                       </Button>
-                      <Button type="submit" className="flex-1" disabled={saveBlogMutation.isPending}>
+                      <Button type="submit" disabled={saveBlogMutation.isPending}>
                         {saveBlogMutation.isPending ? "Saving..." : blogForm.published_at ? "Publish" : "Publish Now"}
                       </Button>
                     </div>
@@ -423,11 +573,9 @@ const Admin = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => {
-                            setBlogForm({ title: post.title, slug: post.slug, content: post.content, excerpt: post.excerpt, image_url: post.image_url || "", published_at: post.published_at ? post.published_at.slice(0, 16) : "" });
-                            setBlogEditId(post.id);
-                            setBlogDialogOpen(true);
-                          }}><Pencil className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => openBlogEdit(post)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => { if (confirm("Delete this post?")) deleteBlogMutation.mutate(post.id); }}>
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
@@ -445,6 +593,20 @@ const Admin = () => {
           <TabsContent value="settings"><SiteSettings /></TabsContent>
         </Tabs>
       </main>
+
+      {/* Blog preview sheet */}
+      <BlogPreview open={previewOpen} onOpenChange={setPreviewOpen} post={{ ...blogForm, tags: blogTags }} />
+
+      {/* Image picker dialog */}
+      <Dialog open={imagePickerOpen} onOpenChange={setImagePickerOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader><DialogTitle>Pick Image</DialogTitle></DialogHeader>
+          <ImagePicker onSelect={(url) => {
+            setBlogForm({ ...blogForm, [imagePickerTarget]: url });
+            setImagePickerOpen(false);
+          }} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
