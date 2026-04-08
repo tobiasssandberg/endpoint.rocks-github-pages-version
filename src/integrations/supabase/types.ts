@@ -71,6 +71,24 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       tools: {
         Row: {
           category: string
@@ -78,6 +96,7 @@ export type Database = {
           description: string
           id: string
           name: string
+          sort_order: number
           url: string
         }
         Insert: {
@@ -86,6 +105,7 @@ export type Database = {
           description: string
           id?: string
           name: string
+          sort_order?: number
           url: string
         }
         Update: {
@@ -94,6 +114,7 @@ export type Database = {
           description?: string
           id?: string
           name?: string
+          sort_order?: number
           url?: string
         }
         Relationships: []

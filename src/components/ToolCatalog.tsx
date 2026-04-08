@@ -38,6 +38,7 @@ const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResult
         const sdkPromise = supabase
           .from("tools")
           .select("*")
+          .order("sort_order")
           .order("name")
           .then(({ data, error }) => {
             if (error) throw error;
