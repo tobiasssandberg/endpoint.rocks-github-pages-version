@@ -12,18 +12,25 @@ const AnalyticsOverview = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ["ga-report", days],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("ga-report", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        body: null,
-      });
-      // supabase.functions.invoke doesn't support query params, so we use fetch directly
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const session = (await supabase.auth.getSession()).data.session;
 
       const res = await fetch(
         `https://${projectId}.supabase.co/functions/v1/ga-report?days=${days}`,
+        {
+          headers: {
+            "Authorization": `Bearer ${session?.access_token ?? anonKey}`,
+            "apikey": anonKey,
+          },
+        }
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      return res.json();
+    },
         {
           headers: {
             "Authorization": `Bearer ${session?.access_token ?? anonKey}`,

@@ -23,6 +23,7 @@ import { isSafeUrl } from "@/lib/urlValidation";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import ImageLibrary from "@/components/admin/ImageLibrary";
 import SiteSettings from "@/components/admin/SiteSettings";
+import AnalyticsOverview from "@/components/admin/AnalyticsOverview";
 import {
   DndContext,
   closestCenter,
