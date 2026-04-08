@@ -8,7 +8,12 @@ const SA_KEY_RAW = Deno.env.get("GOOGLE_SA_KEY") ?? "";
 
 // ── JWT helper ──────────────────────────────────────────────
 async function getAccessToken(): Promise<string> {
-  const sa = JSON.parse(SA_KEY_RAW);
+  let raw = SA_KEY_RAW;
+  // Handle double-quoted or escaped JSON
+  if (raw.startsWith('"') || raw.startsWith("'")) {
+    try { raw = JSON.parse(raw); } catch { /* use as-is */ }
+  }
+  const sa = JSON.parse(raw);
   const now = Math.floor(Date.now() / 1000);
 
   const header = btoa(JSON.stringify({ alg: "RS256", typ: "JWT" }))
