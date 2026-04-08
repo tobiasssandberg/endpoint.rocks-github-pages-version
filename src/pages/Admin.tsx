@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -143,6 +143,13 @@ const Admin = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [imagePickerOpen, setImagePickerOpen] = useState(false);
   const [imagePickerTarget, setImagePickerTarget] = useState<"image_url" | "og_image">("image_url");
+  const [lastAutoSaved, setLastAutoSaved] = useState<Date | null>(null);
+
+  // Refs so the interval always reads fresh data without resetting
+  const blogFormRef = useRef(blogForm);
+  const blogTagsRef = useRef(blogTags);
+  useEffect(() => { blogFormRef.current = blogForm; }, [blogForm]);
+  useEffect(() => { blogTagsRef.current = blogTags; }, [blogTags]);
 
   useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
   useEffect(() => { if (!loading && user && !isAdmin) navigate("/"); }, [loading, user, isAdmin, navigate]);
@@ -162,22 +169,25 @@ const Admin = () => {
         const draft = JSON.parse(saved);
         if (draft.blogForm) setBlogForm(draft.blogForm);
         if (draft.blogTags) setBlogTags(draft.blogTags);
+        if (draft.savedAt) setLastAutoSaved(new Date(draft.savedAt));
         toast.info("Draft restored from autosave");
       }
     } catch {}
   }, []);
 
   useEffect(() => {
-    // Only autosave if there's content
-    if (!blogForm.title && !blogForm.content) return;
     const timer = setInterval(() => {
+      const form = blogFormRef.current;
+      if (!form.title && !form.content) return;
       try {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify({ blogForm, blogTags }));
+        const now = new Date();
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ blogForm: form, blogTags: blogTagsRef.current, savedAt: now.toISOString() }));
+        setLastAutoSaved(now);
         toast("Draft auto-saved", { duration: 1500 });
       } catch {}
     }, 30000);
     return () => clearInterval(timer);
-  }, [blogForm, blogTags]);
+  }, []);
 
   // Tools
   const { data: tools } = useQuery({
@@ -323,6 +333,7 @@ const Admin = () => {
       setBlogForm(emptyBlogForm);
       setBlogEditId(null);
       setBlogTags([]);
+      setLastAutoSaved(null);
       localStorage.removeItem("blog-draft");
     },
     onError: (e: Error) => toast.error(e.message),
@@ -567,10 +578,15 @@ const Admin = () => {
                       </CollapsibleContent>
                     </Collapsible>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
                       <Button type="button" variant="outline" size="sm" onClick={() => setPreviewOpen(true)}>
                         <Eye className="mr-1 h-4 w-4" /> Preview
                       </Button>
+                      {lastAutoSaved && (
+                        <span className="text-xs text-muted-foreground">
+                          Auto-saved {format(lastAutoSaved, "HH:mm:ss")}
+                        </span>
+                      )}
                       <div className="flex-1" />
                       <Button type="button" variant="outline" disabled={saveBlogMutation.isPending} onClick={() => submitBlog(true)}>
                         {saveBlogMutation.isPending ? "Saving..." : "Save as Draft"}
