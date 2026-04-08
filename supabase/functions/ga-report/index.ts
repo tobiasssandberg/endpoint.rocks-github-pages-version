@@ -1,4 +1,7 @@
-import { corsHeaders } from "@supabase/supabase-js/cors";
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 const GA4_PROPERTY_ID = Deno.env.get("GA4_PROPERTY_ID") ?? "";
 const SA_KEY_RAW = Deno.env.get("GOOGLE_SA_KEY") ?? "";
