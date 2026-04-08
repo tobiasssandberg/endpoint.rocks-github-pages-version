@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      blog_post_tags: {
+        Row: {
+          id: string
+          post_id: string
+          tag_id: string
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          tag_id: string
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_post_tags_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_post_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "blog_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_posts: {
         Row: {
           content: string
@@ -21,6 +54,9 @@ export type Database = {
           excerpt: string
           id: string
           image_url: string | null
+          meta_description: string | null
+          meta_title: string | null
+          og_image: string | null
           published_at: string | null
           slug: string
           title: string
@@ -32,6 +68,9 @@ export type Database = {
           excerpt?: string
           id?: string
           image_url?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          og_image?: string | null
           published_at?: string | null
           slug: string
           title: string
@@ -43,10 +82,34 @@ export type Database = {
           excerpt?: string
           id?: string
           image_url?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          og_image?: string | null
           published_at?: string | null
           slug?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      blog_tags: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
         }
         Relationships: []
       }
