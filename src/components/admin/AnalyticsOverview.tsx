@@ -30,6 +30,7 @@ const AnalyticsOverview = () => {
         throw new Error(err.error || `HTTP ${res.status}`);
       }
       return res.json();
+    },
     retry: false,
   });
 
