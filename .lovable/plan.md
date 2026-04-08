@@ -1,25 +1,38 @@
 
 
-## Bildförstoring i blogginlägg
+## Plan: Autosave, Dark/Light Mode & Scroll-bugg
 
-Lägger till en enkel lightbox-effekt: klick på en bild i ett blogginlägg öppnar den i en fullskärms-overlay med möjlighet att stänga via klick eller Escape.
+### 1. Scroll-bugg fix
 
-### Implementation
+**Problemet:** Radix Dialog sätter `overflow: hidden` på `<body>` när en dialog är öppen. Om man navigerar bort från Admin via React Router (t.ex. klickar på logotypen) utan att stänga dialogen, rensas aldrig `overflow: hidden` — hela sidan blir olåst.
 
-1. **Ny komponent `src/components/ImageLightbox.tsx`**
-   - En overlay (`fixed inset-0 z-50 bg-black/90`) som visar bilden centrerad i full storlek (`max-w-[90vw] max-h-[90vh] object-contain`).
-   - Stängs via klick på bakgrunden, X-knapp, eller Escape-tangenten.
-   - Fade-in/out animation.
+**Lösning:** Lägg till en `useEffect` cleanup i `Admin.tsx` som återställer `document.body.style.overflow` till `""` vid unmount. Kort och säkert.
 
-2. **`src/pages/BlogPost.tsx`**
-   - State för vald bild-URL.
-   - Wrappa bilder i klickbara element:
-     - **Markdown-rendering:** Skicka en custom `components={{ img }}` till `ReactMarkdown` som renderar bilder med `cursor-pointer` och `onClick` som öppnar lightboxen.
-     - **HTML-rendering:** Lägg till en `onClick`-delegering på prose-containern som lyssnar på klick på `<img>`-element.
-   - Rendera `ImageLightbox` längst ner.
+### 2. Autosave för bloggutkast
 
-3. **`src/components/admin/BlogPreview.tsx`**
-   - Samma logik som ovan så att preview också visar lightbox-beteendet.
+**I `Admin.tsx`:** Lägg till en `useEffect` med 30-sekunders intervall som automatiskt sparar blogformulärdata till `localStorage` (under en nyckel som `blog-draft`). Vid mount, ladda eventuellt sparat utkast. Visa en diskret "Draft auto-saved" toast. Rensa `localStorage` vid lyckad publicering/sparning.
 
-Inga nya beroenden. Inga databasändringar.
+Inga databasändringar behövs — allt sker lokalt.
+
+### 3. Dark/Light mode toggle
+
+**Approach:** Använd Tailwinds `class`-baserade dark mode (redan konfigurerat via `darkMode: ["class"]`). Dark är standard (nuvarande tema). Light mode kräver en ny uppsättning CSS-variabler.
+
+**Ändringar:**
+
+- **`src/index.css`:** Lägg till en `.light`-klass (eller ta bort dark-klassen) med ljusa CSS-variabelvärden (ljus bakgrund, mörk text, anpassade primary/accent-färger).
+
+- **Ny hook `src/hooks/useTheme.tsx`:** Hanterar tema-state i `localStorage`, applicerar/tar bort `dark`-klassen på `<html>`. Standard: dark.
+
+- **`src/components/Header.tsx`:** Lägg till en Sun/Moon-ikon-knapp som togglar tema via `useTheme`.
+
+### Ändringsöversikt
+
+| Fil | Ändring |
+|-----|---------|
+| `src/pages/Admin.tsx` | useEffect cleanup för overflow + autosave-logik med localStorage |
+| `src/index.css` | Ljusa CSS-variabler under `:root` (utan dark-klass) |
+| `src/hooks/useTheme.tsx` | Ny — tema-hantering med localStorage |
+| `src/components/Header.tsx` | Theme toggle-knapp |
+| `tailwind.config.ts` | Ingen ändring (darkMode redan konfigurerat) |
 
