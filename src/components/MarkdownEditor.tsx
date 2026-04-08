@@ -151,6 +151,8 @@ const MarkdownEditor = ({ value, onChange }: MarkdownEditorProps) => {
         ]}
         commandsFilter={(cmd) => cmd}
         textareaProps={{
+          spellCheck: true,
+          lang: "en",
           onPaste: (e: any) => handlePaste(e),
         }}
       />
