@@ -1,49 +1,33 @@
 
 
-## Problem
+## GA Event Tracking
 
-`gtag()` i `CookieConsent.tsx` definieras som:
-```js
-window.gtag = function (...args: unknown[]) {
-  window.dataLayer!.push(args); // pushes an ARRAY wrapping args
+Lägger till `gtag('event', ...)`-anrop på viktiga interaktioner utan att ändra beteende eller utseende.
+
+### Ny hjälpfunktion — `src/lib/analytics.ts`
+
+Skapar en liten wrapper:
+```ts
+export const trackEvent = (action: string, params?: Record<string, string>) => {
+  window.gtag?.('event', action, params);
 };
 ```
-Googles officiella snippet gör:
-```js
-function gtag(){dataLayer.push(arguments);} // pushes the Arguments object directly
-```
 
-`push(args)` (en array) ≠ `push(arguments)` (Arguments-objekt). GA kräver det senare formatet för att korrekt tolka event-typ och parametrar.
+### Events som spåras
 
-## Plan
+| Komponent | Interaktion | Event-namn | Parametrar |
+|-----------|------------|------------|------------|
+| `ToolCatalog.tsx` | Klick på verktyg (extern länk) | `tool_click` | `tool_name`, `tool_url`, `tool_category` |
+| `ToolCatalog.tsx` | Byta kategori | `category_filter` | `category` |
+| `BlogSection.tsx` | Klick på blogginlägg | `blog_click` | `post_title`, `post_slug` |
+| `HeroSection.tsx` | Sökning (debounced) | `search` | `search_term` |
 
-### 1. Flytta GA-skriptet till `index.html`
+### Ändringar per fil
 
-Lägg till Googles exakta officiella snippet i `<head>` i `index.html`, före alla andra skript:
+1. **`src/lib/analytics.ts`** (ny) — `trackEvent` wrapper
+2. **`src/components/ToolCatalog.tsx`** — `onClick` på verktygs-länken + kategori-knappen
+3. **`src/components/BlogSection.tsx`** — `onClick` på blogg-länken
+4. **`src/components/HeroSection.tsx`** — trigga `search`-event vid sökning (med kort debounce)
 
-```html
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-ETF88872KS"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-ETF88872KS');
-</script>
-```
-
-### 2. Förenkla `CookieConsent.tsx`
-
-- Ta bort `loadGA()`, `initGA()`, `removeGACookies()` och `getConsent()` — de behövs inte längre.
-- Behåll bara banner-komponenten som visar informationsmeddelandet och "Got it!"-knappen.
-
-### 3. Rensa `App.tsx`
-
-- Ta bort `import { initGA }` och `initGA()`-anropet.
-- `RouteChangeTracker` behålls — den använder `window.gtag` som nu definieras globalt i HTML:en.
-- Uppdatera `window.gtag`-typdeklarationen till `(...args: any[]) => void` för att matcha.
-
-### Filer som ändras
-- `index.html` — lägg till GA-snippet
-- `src/components/CookieConsent.tsx` — förenkla till bara banner
-- `src/App.tsx` — ta bort `initGA`-import och anrop
+Inga visuella ändringar. Inga nya beroenden.
 
