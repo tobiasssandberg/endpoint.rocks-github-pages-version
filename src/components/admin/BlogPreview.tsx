@@ -1,8 +1,10 @@
+import { useState, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import DOMPurify from "dompurify";
 import { Calendar } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import ImageLightbox from "@/components/ImageLightbox";
 
 interface BlogPreviewProps {
   open: boolean;
@@ -17,7 +19,11 @@ interface BlogPreviewProps {
   };
 }
 
-const BlogPreview = ({ open, onOpenChange, post }: BlogPreviewProps) => (
+const BlogPreview = ({ open, onOpenChange, post }: BlogPreviewProps) => {
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const closeLightbox = useCallback(() => setLightboxSrc(null), []);
+
+  return (
   <Sheet open={open} onOpenChange={onOpenChange}>
     <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
       <SheetHeader>
@@ -41,17 +47,37 @@ const BlogPreview = ({ open, onOpenChange, post }: BlogPreviewProps) => (
         )}
         {post.content.trim().startsWith("<") ? (
           <div
-            className="prose prose-invert max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-primary prose-strong:text-foreground prose-img:rounded-xl"
+            className="prose prose-invert max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-primary prose-strong:text-foreground prose-img:rounded-xl [&_img]:cursor-pointer [&_img]:transition-opacity [&_img]:hover:opacity-90"
             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
+            onClick={(e) => {
+              const target = e.target as HTMLElement;
+              if (target.tagName === "IMG") setLightboxSrc((target as HTMLImageElement).src);
+            }}
           />
         ) : (
           <div className="prose prose-invert max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-primary prose-strong:text-foreground prose-img:rounded-xl">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                img: ({ src, alt }) => (
+                  <img
+                    src={src}
+                    alt={alt || ""}
+                    className="cursor-pointer transition-opacity hover:opacity-90 rounded-xl"
+                    onClick={() => src && setLightboxSrc(src)}
+                  />
+                ),
+              }}
+            >
+              {post.content}
+            </ReactMarkdown>
           </div>
         )}
+        <ImageLightbox src={lightboxSrc} onClose={closeLightbox} />
       </article>
     </SheetContent>
   </Sheet>
-);
+  );
+};
 
 export default BlogPreview;

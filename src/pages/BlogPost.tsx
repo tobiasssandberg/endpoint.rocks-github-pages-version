@@ -9,10 +9,13 @@ import Footer from "@/components/Footer";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
+import ImageLightbox from "@/components/ImageLightbox";
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const closeLightbox = useCallback(() => setLightboxSrc(null), []);
 
   const { data: post, isLoading } = useQuery({
     queryKey: ["blog-post", slug],
@@ -144,14 +147,33 @@ const BlogPost = () => {
             )}
             {post.content.trim().startsWith("<") ? (
               <div
-                className="prose prose-invert max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-primary prose-strong:text-foreground prose-img:rounded-xl"
+                className="prose prose-invert max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-primary prose-strong:text-foreground prose-img:rounded-xl [&_img]:cursor-pointer [&_img]:transition-opacity [&_img]:hover:opacity-90"
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
+                onClick={(e) => {
+                  const target = e.target as HTMLElement;
+                  if (target.tagName === "IMG") setLightboxSrc((target as HTMLImageElement).src);
+                }}
               />
             ) : (
               <div className="prose prose-invert max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-primary prose-strong:text-foreground prose-img:rounded-xl">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    img: ({ src, alt }) => (
+                      <img
+                        src={src}
+                        alt={alt || ""}
+                        className="cursor-pointer transition-opacity hover:opacity-90 rounded-xl"
+                        onClick={() => src && setLightboxSrc(src)}
+                      />
+                    ),
+                  }}
+                >
+                  {post.content}
+                </ReactMarkdown>
               </div>
             )}
+            <ImageLightbox src={lightboxSrc} onClose={closeLightbox} />
           </article>
         ) : (
           <p className="text-muted-foreground">Post not found.</p>
