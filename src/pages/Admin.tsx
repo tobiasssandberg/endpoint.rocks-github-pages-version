@@ -262,6 +262,7 @@ const Admin = () => {
             <TabsTrigger value="blog">Blog ({blogPosts?.length ?? 0})</TabsTrigger>
             <TabsTrigger value="tools">Tools ({tools?.length ?? 0})</TabsTrigger>
             <TabsTrigger value="images">Images</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -440,6 +441,7 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="images"><ImageLibrary /></TabsContent>
+          <TabsContent value="analytics"><AnalyticsOverview /></TabsContent>
           <TabsContent value="settings"><SiteSettings /></TabsContent>
         </Tabs>
       </main>
