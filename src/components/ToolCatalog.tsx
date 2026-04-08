@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchPublicRows, withTimeout } from "@/lib/publicData";
 import { ExternalLink } from "lucide-react";
 import { isSafeUrl } from "@/lib/urlValidation";
+import { trackEvent } from "@/lib/analytics";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -99,7 +100,7 @@ const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResult
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
-              onClick={() => onCategoryChange(cat)}
+              onClick={() => { onCategoryChange(cat); trackEvent("category_filter", { category: cat }); }}
               className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
                 selectedCategory === cat
                   ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
@@ -130,6 +131,7 @@ const ToolCatalog = ({ searchQuery, selectedCategory, onCategoryChange, onResult
                 href={isSafeUrl(tool.url) ? tool.url : "#"}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackEvent("tool_click", { tool_name: tool.name, tool_url: tool.url, tool_category: tool.category })}
                 className="group relative flex flex-col rounded-xl border border-border/50 bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
               >
                 <div className="mb-3 flex items-start justify-between">

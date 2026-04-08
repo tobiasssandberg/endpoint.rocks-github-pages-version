@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchPublicRows, withTimeout } from "@/lib/publicData";
 import { Calendar, ArrowRight } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 
@@ -103,6 +104,7 @@ const BlogSection = ({ searchQuery = "", onResultCount }: BlogSectionProps) => {
               <Link
                 key={post.id}
                 to={`/blog/${post.slug}`}
+                onClick={() => trackEvent("blog_click", { post_title: post.title, post_slug: post.slug })}
                 className="group flex flex-col rounded-xl border border-border/50 bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 opacity-0 animate-fade-in"
                 style={{ animationDelay: `${index * 100}ms` }}
               >

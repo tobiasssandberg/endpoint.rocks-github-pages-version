@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Search, Github, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
+import { trackEvent } from "@/lib/analytics";
 
 interface HeroSectionProps {
   searchQuery: string;
@@ -15,6 +16,17 @@ const HeroSection = ({ searchQuery, onSearchChange, toolCount = 0, blogCount = 0
   const searchRef = useRef<HTMLInputElement>(null);
   const isSearching = searchQuery.trim().length > 0;
   const totalResults = toolCount + blogCount;
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Debounced search event tracking
+  useEffect(() => {
+    if (!searchQuery.trim()) return;
+    clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      trackEvent("search", { search_term: searchQuery.trim() });
+    }, 1000);
+    return () => clearTimeout(searchTimerRef.current);
+  }, [searchQuery]);
 
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
