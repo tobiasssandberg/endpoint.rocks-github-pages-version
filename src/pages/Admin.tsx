@@ -145,11 +145,39 @@ const Admin = () => {
   const [imagePickerTarget, setImagePickerTarget] = useState<"image_url" | "og_image">("image_url");
   const [lastAutoSaved, setLastAutoSaved] = useState<Date | null>(null);
 
+  const getStoredDraft = (): {
+    blogForm: BlogForm;
+    blogTags: string[];
+    savedAt?: string;
+    blogEditId: string | null;
+  } | null => {
+    try {
+      const saved = localStorage.getItem("blog-draft");
+      if (!saved) return null;
+
+      const draft = JSON.parse(saved);
+      if (!draft?.blogForm) return null;
+
+      return {
+        blogForm: { ...emptyBlogForm, ...draft.blogForm },
+        blogTags: Array.isArray(draft.blogTags) ? draft.blogTags : [],
+        savedAt: typeof draft.savedAt === "string" ? draft.savedAt : undefined,
+        blogEditId: typeof draft.blogEditId === "string" ? draft.blogEditId : null,
+      };
+    } catch {
+      return null;
+    }
+  };
+
   // Refs so the interval always reads fresh data without resetting
   const blogFormRef = useRef(blogForm);
   const blogTagsRef = useRef(blogTags);
+  const blogEditIdRef = useRef(blogEditId);
+  const blogDialogOpenRef = useRef(blogDialogOpen);
   useEffect(() => { blogFormRef.current = blogForm; }, [blogForm]);
   useEffect(() => { blogTagsRef.current = blogTags; }, [blogTags]);
+  useEffect(() => { blogEditIdRef.current = blogEditId; }, [blogEditId]);
+  useEffect(() => { blogDialogOpenRef.current = blogDialogOpen; }, [blogDialogOpen]);
 
   useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
   useEffect(() => { if (!loading && user && !isAdmin) navigate("/"); }, [loading, user, isAdmin, navigate]);
@@ -159,33 +187,38 @@ const Admin = () => {
     return () => { document.body.style.overflow = ""; };
   }, []);
 
-  // Autosave blog draft every 30 seconds
-  const DRAFT_KEY = "blog-draft";
   useEffect(() => {
-    // Restore draft on mount
     try {
-      const saved = localStorage.getItem(DRAFT_KEY);
-      if (saved) {
-        const draft = JSON.parse(saved);
-        if (draft.blogForm) setBlogForm(draft.blogForm);
-        if (draft.blogTags) setBlogTags(draft.blogTags);
-        if (draft.savedAt) setLastAutoSaved(new Date(draft.savedAt));
-        toast.info("Draft restored from autosave");
-      }
+      const saved = localStorage.getItem("blog-draft");
+      if (!saved) return;
+      const draft = JSON.parse(saved);
+      if (draft?.savedAt) setLastAutoSaved(new Date(draft.savedAt));
     } catch {}
   }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
+      if (!blogDialogOpenRef.current) return;
+
       const form = blogFormRef.current;
       if (!form.title && !form.content) return;
+
       try {
         const now = new Date();
-        localStorage.setItem(DRAFT_KEY, JSON.stringify({ blogForm: form, blogTags: blogTagsRef.current, savedAt: now.toISOString() }));
+        localStorage.setItem(
+          "blog-draft",
+          JSON.stringify({
+            blogForm: form,
+            blogTags: blogTagsRef.current,
+            blogEditId: blogEditIdRef.current,
+            savedAt: now.toISOString(),
+          })
+        );
         setLastAutoSaved(now);
         toast("Draft auto-saved", { duration: 1500 });
       } catch {}
     }, 30000);
+
     return () => clearInterval(timer);
   }, []);
 
@@ -352,15 +385,44 @@ const Admin = () => {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const openNewBlogPost = () => {
+    const storedDraft = getStoredDraft();
+
+    if (storedDraft && !storedDraft.blogEditId) {
+      setBlogForm(storedDraft.blogForm);
+      setBlogTags(storedDraft.blogTags);
+      setLastAutoSaved(storedDraft.savedAt ? new Date(storedDraft.savedAt) : null);
+      toast.info("Opened autosaved draft");
+    } else {
+      setBlogForm(emptyBlogForm);
+      setBlogTags([]);
+      setLastAutoSaved(null);
+    }
+
+    setBlogEditId(null);
+    setBlogDialogOpen(true);
+  };
+
   const openBlogEdit = async (post: any) => {
-    setBlogForm({
-      title: post.title, slug: post.slug, content: post.content,
-      excerpt: post.excerpt, image_url: post.image_url || "", published_at: post.published_at ? post.published_at.slice(0, 16) : "",
-      meta_title: post.meta_title || "", meta_description: post.meta_description || "", og_image: post.og_image || "",
-    });
+    const storedDraft = getStoredDraft();
+
+    if (storedDraft?.blogEditId === post.id) {
+      setBlogForm(storedDraft.blogForm);
+      setBlogTags(storedDraft.blogTags);
+      setLastAutoSaved(storedDraft.savedAt ? new Date(storedDraft.savedAt) : null);
+      toast.info("Restored autosaved changes for this post");
+    } else {
+      setBlogForm({
+        title: post.title, slug: post.slug, content: post.content,
+        excerpt: post.excerpt, image_url: post.image_url || "", published_at: post.published_at ? post.published_at.slice(0, 16) : "",
+        meta_title: post.meta_title || "", meta_description: post.meta_description || "", og_image: post.og_image || "",
+      });
+      const tags = await loadPostTags(post.id);
+      setBlogTags(tags);
+      setLastAutoSaved(null);
+    }
+
     setBlogEditId(post.id);
-    const tags = await loadPostTags(post.id);
-    setBlogTags(tags);
     setBlogDialogOpen(true);
   };
 
@@ -469,7 +531,7 @@ const Admin = () => {
               <h2 className="text-2xl font-bold">Manage Blog</h2>
               <Dialog open={blogDialogOpen} onOpenChange={setBlogDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => { setBlogForm(emptyBlogForm); setBlogEditId(null); setBlogTags([]); setBlogDialogOpen(true); }}>
+                  <Button onClick={openNewBlogPost}>
                     <Plus className="mr-1 h-4 w-4" /> New Post
                   </Button>
                 </DialogTrigger>
