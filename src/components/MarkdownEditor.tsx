@@ -1,8 +1,10 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import MDEditor, { commands } from "@uiw/react-md-editor";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, Images } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ImagePicker from "@/components/admin/ImagePicker";
 
 interface MarkdownEditorProps {
   value: string;
@@ -29,6 +31,7 @@ async function uploadImage(file: File): Promise<string | null> {
 const MarkdownEditor = ({ value, onChange }: MarkdownEditorProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textApiRef = useRef<any>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const handleChange = useCallback(
     (val?: string) => onChange(val ?? ""),
@@ -78,6 +81,20 @@ const MarkdownEditor = ({ value, onChange }: MarkdownEditorProps) => {
     [insertImageMarkdown]
   );
 
+  const handlePickerSelect = useCallback(
+    (url: string) => {
+      const markdown = `![image](${url})`;
+      if (textApiRef.current) {
+        textApiRef.current.replaceSelection(markdown);
+      } else {
+        onChange(value + "\n" + markdown);
+      }
+      setPickerOpen(false);
+      toast.success("Image inserted!");
+    },
+    [value, onChange]
+  );
+
   const imageUploadCommand: commands.ICommand = {
     name: "image-upload",
     keyCommand: "image-upload",
@@ -85,6 +102,16 @@ const MarkdownEditor = ({ value, onChange }: MarkdownEditorProps) => {
     icon: <ImagePlus className="h-3 w-3" />,
     execute: () => {
       fileInputRef.current?.click();
+    },
+  };
+
+  const imageLibraryCommand: commands.ICommand = {
+    name: "image-library",
+    keyCommand: "image-library",
+    buttonProps: { "aria-label": "Pick from library", title: "Pick from library" },
+    icon: <Images className="h-3 w-3" />,
+    execute: () => {
+      setPickerOpen(true);
     },
   };
 
@@ -120,12 +147,22 @@ const MarkdownEditor = ({ value, onChange }: MarkdownEditorProps) => {
           commands.checkedListCommand,
           commands.divider,
           imageUploadCommand,
+          imageLibraryCommand,
         ]}
         commandsFilter={(cmd) => cmd}
         textareaProps={{
           onPaste: (e: any) => handlePaste(e),
         }}
       />
+
+      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Pick from Image Library</DialogTitle>
+          </DialogHeader>
+          <ImagePicker onSelect={handlePickerSelect} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
