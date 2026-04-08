@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { useEffect } from "react";
 
 const BlogPost = () => {
@@ -27,6 +28,19 @@ const BlogPost = () => {
     enabled: !!slug,
   });
 
+  const { data: tags } = useQuery({
+    queryKey: ["blog-post-tags", post?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("blog_post_tags")
+        .select("tag_id, blog_tags(name, slug)")
+        .eq("post_id", post!.id);
+      if (error) throw error;
+      return (data ?? []).map((r: any) => r.blog_tags).filter(Boolean);
+    },
+    enabled: !!post?.id,
+  });
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [slug]);
@@ -35,8 +49,11 @@ const BlogPost = () => {
     if (!post) return;
 
     const ogUrl = `${window.location.origin}/blog/${post.slug}`;
+    const metaTitle = post.meta_title || post.title;
+    const metaDesc = post.meta_description || post.excerpt;
+    const ogImage = post.og_image || post.image_url;
 
-    document.title = `${post.title} | Endpoint.rocks`;
+    document.title = `${metaTitle} | Endpoint.rocks`;
 
     const setMeta = (name: string, content: string, attr = "name") => {
       let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
@@ -48,33 +65,29 @@ const BlogPost = () => {
       el.setAttribute("content", content);
     };
 
-    setMeta("description", post.excerpt);
-    setMeta("og:title", post.title, "property");
-    setMeta("og:description", post.excerpt, "property");
+    setMeta("description", metaDesc);
+    setMeta("og:title", metaTitle, "property");
+    setMeta("og:description", metaDesc, "property");
     setMeta("og:url", ogUrl, "property");
     setMeta("og:type", "article", "property");
-    if (post.image_url) setMeta("og:image", post.image_url, "property");
+    if (ogImage) setMeta("og:image", ogImage, "property");
     setMeta("twitter:card", "summary_large_image");
-    setMeta("twitter:title", post.title);
-    setMeta("twitter:description", post.excerpt);
-    if (post.image_url) setMeta("twitter:image", post.image_url);
+    setMeta("twitter:title", metaTitle);
+    setMeta("twitter:description", metaDesc);
+    if (ogImage) setMeta("twitter:image", ogImage);
 
-    // JSON-LD structured data
     const jsonLd = document.createElement("script");
     jsonLd.type = "application/ld+json";
     jsonLd.textContent = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "Article",
-      headline: post.title,
-      description: post.excerpt,
+      headline: metaTitle,
+      description: metaDesc,
       url: ogUrl,
       datePublished: post.published_at || post.created_at,
       dateModified: post.updated_at,
-      ...(post.image_url ? { image: post.image_url } : {}),
-      publisher: {
-        "@type": "Organization",
-        name: "Endpoint.rocks",
-      },
+      ...(ogImage ? { image: ogImage } : {}),
+      publisher: { "@type": "Organization", name: "Endpoint.rocks" },
     });
     document.head.appendChild(jsonLd);
 
@@ -89,6 +102,7 @@ const BlogPost = () => {
       );
     };
   }, [post]);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -109,20 +123,23 @@ const BlogPost = () => {
         ) : post ? (
           <article className="mx-auto max-w-3xl animate-fade-in" style={{ animationDelay: "100ms", opacity: 0 }}>
             <h1 className="mb-4 text-3xl font-bold md:text-4xl">{post.title}</h1>
-            {post.published_at && (
-              <div className="mb-8 flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                {new Date(post.published_at).toLocaleDateString("sv-SE")}
-              </div>
-            )}
+            <div className="mb-8 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              {post.published_at && (
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  {new Date(post.published_at).toLocaleDateString("sv-SE")}
+                </span>
+              )}
+              {tags?.map((tag: any) => (
+                <Badge key={tag.slug} variant="secondary" className="text-xs">{tag.name}</Badge>
+              ))}
+            </div>
             {post.image_url && (
               <img
                 src={post.image_url}
                 alt={post.title}
                 className="mb-8 w-full rounded-xl object-cover"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).style.display = "none";
-                }}
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
               />
             )}
             {post.content.trim().startsWith("<") ? (
