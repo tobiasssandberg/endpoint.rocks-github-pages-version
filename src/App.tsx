@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
-import CookieConsent, { initGA } from "@/components/CookieConsent";
+import CookieConsent from "@/components/CookieConsent";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
@@ -17,12 +17,9 @@ const queryClient = new QueryClient();
 
 declare global {
   interface Window {
-    gtag?: (...args: unknown[]) => void;
+    gtag?: (...args: any[]) => void;
   }
 }
-
-// Initialize GA on app load if consent was previously given
-initGA();
 
 const RouteChangeTracker = () => {
   const location = useLocation();
