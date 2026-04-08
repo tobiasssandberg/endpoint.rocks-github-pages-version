@@ -333,6 +333,7 @@ const Admin = () => {
       setBlogForm(emptyBlogForm);
       setBlogEditId(null);
       setBlogTags([]);
+      setLastAutoSaved(null);
       localStorage.removeItem("blog-draft");
     },
     onError: (e: Error) => toast.error(e.message),
