@@ -1,86 +1,51 @@
 
 
-## Admin-panelen: 5 nya funktioner
+## Bloggförbättringar — 5 funktioner
 
-Dessa fem tillägg bygger ut admin-gränssnittet med nya flikar och funktionalitet. Implementeras stegvis.
+### 1. Taggar/kategorier för blogginlägg
 
----
+**Databasändring:** Ny tabell `blog_tags` (id, name, slug) och kopplingstabell `blog_post_tags` (post_id, tag_id) med RLS (publikt läsbar, admin CRUD). Migration lägger även till index.
 
-### 1. Dashboard med nyckeltal (ny flik)
+**Admin:** Taggar visas som chips i blogg-formuläret. Ny input för att skapa/välja taggar (autocomplete från befintliga). Sparas vid submit via upsert + junction table.
 
-En "Dashboard"-flik som förvald vy i admin med:
-- Antal publicerade inlägg, utkast, totalt verktyg
-- Senaste aktivitet (de 5 senaste ändrade blogginläggen/verktygen baserat på `updated_at`/`created_at`)
-- Visas med kort/cards i en grid
+**Publik sida:** `Blog.tsx` och `BlogSection.tsx` visar taggar som badges på varje kort. `Blog.tsx` får en tagg-filterrad överst.
 
-Ingen databasändring — all data hämtas från befintliga tabeller (`blog_posts`, `tools`).
+### 2. Förhandsgranskning av blogginlägg
 
----
+**Admin:** En "Preview"-knapp i blogg-dialogen öppnar en ny Dialog/Sheet som renderar inlägget med exakt samma layout som `BlogPost.tsx` (Header, hero-bild, markdown-rendering med `ReactMarkdown` + `remarkGfm`, typografi-klasser). Ingen routing — ren klientvy baserad på formulärdatan.
 
-### 2. Bildbibliotek (ny flik)
+### 3. Bildbibliotek-väljare i bloggeditorn
 
-En "Images"-flik som listar alla filer i `blog-images`-bucketen:
-- Visar miniatyrbilder i en grid
-- Knapp för att kopiera publik URL till clipboard
-- Knapp för att radera bild (med bekräftelse)
-- Använder `supabase.storage.from('blog-images').list()` och `.getPublicUrl()`
+**ImageLibrary-refactor:** Extrahera bildgalleri-griden till en återanvändbar `ImagePicker`-komponent som tar en `onSelect(url)` callback.
 
-Ingen databasändring — använder befintlig storage-bucket.
+**MarkdownEditor:** Lägg till en ny toolbar-knapp "Pick from library" som öppnar en Dialog med `ImagePicker`. Vid val infogas `![image](url)` i editorn.
 
----
+**Blog-formuläret:** "Image URL"-fältet ersätts med en knapp som öppnar samma `ImagePicker` + möjlighet att ladda upp ny bild. Vald bild visas som thumbnail.
 
-### 3. Sortering/drag-and-drop för verktyg
+### 4. Bildanvändningsstatus
 
-Lägger till en `sort_order`-kolumn (integer, default 0) i `tools`-tabellen via migration. I admin-verktygsfliken:
-- Verktyg grupperade per kategori
-- Drag-and-drop med `@dnd-kit/core` + `@dnd-kit/sortable`
-- Sparar ny ordning via batch-update till databasen
-- Publik ToolCatalog sorterar på `sort_order` istället för `name`
+**ImageLibrary:** Vid laddning, hämta alla `blog_posts.content` och `blog_posts.image_url`. Matcha varje bild-URL mot innehållet. Visa en "Used" / "Unused" badge på varje bild i galleriet. Filterknappar för att visa alla / bara oanvända.
 
-**Databasändring:** `ALTER TABLE tools ADD COLUMN sort_order integer NOT NULL DEFAULT 0;`
+### 5. SEO-fält per blogginlägg
+
+**Databasändring:** Migration lägger till kolumner `meta_title TEXT`, `meta_description TEXT`, `og_image TEXT` på `blog_posts`.
+
+**Admin:** Collapsible "SEO"-sektion i blogg-formuläret med fält för meta title, meta description, og_image (med ImagePicker). Teckenräknare för title (≤60) och description (≤160).
+
+**BlogPost.tsx:** Använd `meta_title` (fallback till `title`), `meta_description` (fallback till `excerpt`), och `og_image` (fallback till `image_url`) i meta-taggarna och JSON-LD.
 
 ---
 
-### 4. GA-översikt i admin (ny flik)
+### Ändringsöversikt
 
-En "Analytics"-flik som visar Google Analytics-data:
-- Sidvisningar senaste 7/30 dagarna och populäraste sidor
-- Kräver GA Data API (Google Analytics Reporting)
-- Implementeras via en edge function som anropar GA4 Data API med ett service account
-- Kräver en **Google Service Account JSON-nyckel** som secret
-
-**Beroende:** Du behöver skapa ett Google Cloud Service Account med tillgång till GA4-propertyn och lägga till nyckeln som secret. Jag guidar dig genom det steget.
-
----
-
-### 5. Redigera About-sektionen från admin (ny flik)
-
-En "Site Settings"-flik där About-texten kan redigeras:
-- Ny tabell `site_settings` med kolumner `key` (text, primary key) och `value` (text)
-- Admin kan redigera namn, beskrivning, sociala länkar
-- `AboutSection` hämtar data från `site_settings` istället för hårdkodade värden
-- RLS: alla kan läsa, bara admin kan skriva
-
-**Databasändring:** Ny tabell `site_settings` + RLS-policies + seed-data med nuvarande värden.
-
----
-
-### Prioritetsordning
-
-Jag föreslår att vi implementerar i denna ordning:
-1. **Dashboard** — ingen DB-ändring, snabbast
-2. **Bildbibliotek** — ingen DB-ändring, använder befintlig bucket
-3. **Sortering** — enkel migration + nytt npm-paket
-4. **Site Settings** — ny tabell + refaktorering av AboutSection
-5. **GA-översikt** — kräver extern nyckel och edge function, mest komplext
-
-### Filer som skapas/ändras
-
-| Steg | Filer |
-|------|-------|
-| Dashboard | `src/pages/Admin.tsx` (ny flik + dashboard-komponent) |
-| Bildbibliotek | `src/pages/Admin.tsx` (ny flik), ev. ny komponent `src/components/admin/ImageLibrary.tsx` |
-| Sortering | Migration (ny kolumn), `src/pages/Admin.tsx` (drag-and-drop i verktygsflik), `src/components/ToolCatalog.tsx` (sortera på `sort_order`), nytt paket `@dnd-kit/core` |
-| Site Settings | Migration (ny tabell), `src/pages/Admin.tsx` (ny flik), `src/components/AboutSection.tsx` (hämta dynamisk data) |
-| GA-översikt | Edge function `supabase/functions/ga-report/index.ts`, `src/pages/Admin.tsx` (ny flik), ny secret (Google SA key) |
+| Fil | Ändring |
+|-----|---------|
+| Migration | `blog_tags`, `blog_post_tags` tabeller + `meta_title`, `meta_description`, `og_image` kolumner |
+| `src/components/admin/ImagePicker.tsx` | Ny — återanvändbar bildväljare |
+| `src/components/admin/ImageLibrary.tsx` | Refaktorera att använda ImagePicker + lägg till "used/unused" badge |
+| `src/components/MarkdownEditor.tsx` | Ny toolbar-knapp för bildbiblioteket |
+| `src/pages/Admin.tsx` | Taggar, SEO-sektion, preview-knapp, ImagePicker i formulär |
+| `src/pages/BlogPost.tsx` | SEO-fält i meta-taggar |
+| `src/pages/Blog.tsx` | Tagg-filter + visa taggar |
+| `src/components/BlogSection.tsx` | Visa taggar på kort |
 
