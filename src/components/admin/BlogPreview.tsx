@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import DOMPurify from "dompurify";
+import rehypeRaw from "rehype-raw";
 import { Calendar } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import ImageLightbox from "@/components/ImageLightbox";
