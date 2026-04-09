@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import DOMPurify from "dompurify";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
@@ -145,19 +146,10 @@ const BlogPost = () => {
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
               />
             )}
-            {post.content.trim().startsWith("<") ? (
-              <div
-                className="prose prose-invert max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-primary prose-strong:text-foreground prose-img:rounded-xl [&_img]:cursor-pointer [&_img]:transition-opacity [&_img]:hover:opacity-90"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
-                onClick={(e) => {
-                  const target = e.target as HTMLElement;
-                  if (target.tagName === "IMG") setLightboxSrc((target as HTMLImageElement).src);
-                }}
-              />
-            ) : (
-              <div className="prose prose-invert max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-primary prose-strong:text-foreground prose-img:rounded-xl">
+            <div className="prose prose-invert max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-primary prose-strong:text-foreground prose-img:rounded-xl">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeRaw]}
                   components={{
                     img: ({ src, alt }) => (
                       <img
@@ -172,7 +164,6 @@ const BlogPost = () => {
                   {post.content}
                 </ReactMarkdown>
               </div>
-            )}
             <ImageLightbox src={lightboxSrc} onClose={closeLightbox} />
           </article>
         ) : (
