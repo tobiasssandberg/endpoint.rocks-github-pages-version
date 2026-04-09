@@ -160,6 +160,7 @@ const BlogPost = () => {
                         onClick={() => src && setLightboxSrc(src)}
                       />
                     ),
+                    code: (props) => <CodeBlock {...props} />,
                   }}
                 >
                   {post.content}

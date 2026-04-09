@@ -59,6 +59,7 @@ const BlogPreview = ({ open, onOpenChange, post }: BlogPreviewProps) => {
                     onClick={() => src && setLightboxSrc(src)}
                   />
                 ),
+                code: (props) => <CodeBlock {...props} />,
               }}
             >
               {post.content}
