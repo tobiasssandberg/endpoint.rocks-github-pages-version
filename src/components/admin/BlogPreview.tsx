@@ -5,6 +5,7 @@ import rehypeRaw from "rehype-raw";
 import { Calendar } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import ImageLightbox from "@/components/ImageLightbox";
+import CodeBlock from "@/components/CodeBlock";
 
 interface BlogPreviewProps {
   open: boolean;
