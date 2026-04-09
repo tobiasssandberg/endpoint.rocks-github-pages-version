@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState, useCallback } from "react";
 import ImageLightbox from "@/components/ImageLightbox";
+import CodeBlock from "@/components/CodeBlock";
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -159,6 +160,7 @@ const BlogPost = () => {
                         onClick={() => src && setLightboxSrc(src)}
                       />
                     ),
+                    code: (props) => <CodeBlock {...props} />,
                   }}
                 >
                   {post.content}
