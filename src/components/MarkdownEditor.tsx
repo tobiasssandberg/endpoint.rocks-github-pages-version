@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import MDEditor, { commands } from "@uiw/react-md-editor";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { optimizeImage } from "@/lib/imageOptimizer";
 import { ImagePlus, Images } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ImagePicker from "@/components/admin/ImagePicker";
@@ -12,12 +13,13 @@ interface MarkdownEditorProps {
 }
 
 async function uploadImage(file: File): Promise<string | null> {
-  const ext = file.name.split(".").pop() || "png";
+  const optimized = await optimizeImage(file);
+  const ext = optimized.name.split(".").pop() || "png";
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
   const { error } = await supabase.storage
     .from("blog-images")
-    .upload(fileName, file, { cacheControl: "3600", upsert: false });
+    .upload(fileName, optimized, { cacheControl: "3600", upsert: false });
 
   if (error) {
     toast.error("Image upload failed: " + error.message);
