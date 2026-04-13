@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { useEffect, useState, useCallback } from "react";
 import ImageLightbox from "@/components/ImageLightbox";
 import CodeBlock from "@/components/CodeBlock";
+import ShareButtons from "@/components/ShareButtons";
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -128,7 +129,10 @@ const BlogPost = () => {
           </div>
         ) : post ? (
           <article className="mx-auto max-w-3xl animate-fade-in" style={{ animationDelay: "100ms", opacity: 0 }}>
-            <h1 className="mb-4 text-3xl font-bold md:text-4xl">{post.title}</h1>
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <h1 className="text-3xl font-bold md:text-4xl">{post.title}</h1>
+              <ShareButtons title={post.title} />
+            </div>
             <div className="mb-8 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
               {post.published_at && (
                 <span className="flex items-center gap-1">
