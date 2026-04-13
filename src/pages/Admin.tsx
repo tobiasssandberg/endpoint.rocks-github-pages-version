@@ -471,7 +471,7 @@ const Admin = () => {
           <TabsContent value="dashboard"><ErrorBoundary fallbackLabel="Dashboard crashed"><AdminDashboard /></ErrorBoundary></TabsContent>
 
           {/* TOOLS TAB */}
-          <TabsContent value="tools">
+          <TabsContent value="tools"><ErrorBoundary fallbackLabel="Tools crashed">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-2xl font-bold">Manage Tools</h2>
               <Dialog open={toolDialogOpen} onOpenChange={setToolDialogOpen}>
@@ -525,10 +525,10 @@ const Admin = () => {
                 </DndContext>
               </Table>
             </div>
-          </TabsContent>
+          </ErrorBoundary></TabsContent>
 
           {/* BLOG TAB */}
-          <TabsContent value="blog">
+          <TabsContent value="blog"><ErrorBoundary fallbackLabel="Blog crashed">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-2xl font-bold">Manage Blog</h2>
               <Dialog open={blogDialogOpen} onOpenChange={setBlogDialogOpen}>
@@ -699,7 +699,7 @@ const Admin = () => {
                 </TableBody>
               </Table>
             </div>
-          </TabsContent>
+          </ErrorBoundary></TabsContent>
 
           <TabsContent value="images"><ErrorBoundary fallbackLabel="Image Library crashed"><ImageLibrary /></ErrorBoundary></TabsContent>
           <TabsContent value="analytics"><ErrorBoundary fallbackLabel="Analytics crashed"><AnalyticsOverview /></ErrorBoundary></TabsContent>
