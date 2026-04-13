@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
+import { estimateReadingTime } from "@/lib/readingTime";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -46,7 +47,7 @@ const Blog = () => {
       const to = from + POSTS_PER_PAGE - 1;
       const { data, error, count } = await supabase
         .from("blog_posts")
-        .select("id, title, slug, excerpt, image_url, published_at", { count: "exact" })
+        .select("id, title, slug, excerpt, content, image_url, published_at", { count: "exact" })
         .order("published_at", { ascending: false })
         .range(from, to);
       if (error) throw error;
@@ -120,13 +121,17 @@ const Blog = () => {
                       ))}
                     </div>
                   )}
-                  <div className="flex items-center text-xs text-muted-foreground">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     {post.published_at && (
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {new Date(post.published_at).toLocaleDateString("sv-SE")}
                       </span>
                     )}
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {estimateReadingTime(post.content)} min
+                    </span>
                   </div>
                 </Link>
               ))}

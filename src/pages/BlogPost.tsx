@@ -7,7 +7,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { ArrowLeft, Calendar } from "lucide-react";
+import { ArrowLeft, Calendar, Clock } from "lucide-react";
+import { estimateReadingTime } from "@/lib/readingTime";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState, useCallback } from "react";
@@ -128,13 +129,17 @@ const BlogPost = () => {
         ) : post ? (
           <article className="mx-auto max-w-3xl animate-fade-in" style={{ animationDelay: "100ms", opacity: 0 }}>
             <h1 className="mb-4 text-3xl font-bold md:text-4xl">{post.title}</h1>
-            <div className="mb-8 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <div className="mb-8 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
               {post.published_at && (
                 <span className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
                   {new Date(post.published_at).toLocaleDateString("sv-SE")}
                 </span>
               )}
+              <span className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                {estimateReadingTime(post.content)} min read
+              </span>
               {tags?.map((tag: any) => (
                 <Badge key={tag.slug} variant="secondary" className="text-xs">{tag.name}</Badge>
               ))}
