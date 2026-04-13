@@ -183,9 +183,21 @@ const Admin = () => {
   useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
   useEffect(() => { if (!loading && user && !isAdmin) navigate("/"); }, [loading, user, isAdmin, navigate]);
 
-  // Fix: restore body overflow when leaving Admin (Radix Dialog may leave overflow:hidden)
+  // Fix: restore body overflow when leaving Admin or switching tabs
+  // Radix Dialog/Sheet may leave overflow:hidden on body
   useEffect(() => {
-    return () => { document.body.style.overflow = ""; };
+    const observer = new MutationObserver(() => {
+      // If no Radix portals with [data-state="open"] exist, ensure body is scrollable
+      const openOverlays = document.querySelectorAll("[data-state='open'][role='dialog']");
+      if (openOverlays.length === 0 && document.body.style.overflow === "hidden") {
+        document.body.style.overflow = "";
+      }
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["style"] });
+    return () => {
+      observer.disconnect();
+      document.body.style.overflow = "";
+    };
   }, []);
 
   useEffect(() => {
