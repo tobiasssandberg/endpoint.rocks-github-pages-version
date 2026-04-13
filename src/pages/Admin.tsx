@@ -471,7 +471,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="dashboard">
-          <TabsList className="mb-6 flex-wrap">
+          <TabsList className="mb-6 w-full justify-start overflow-x-auto overflow-y-hidden scrollbar-none">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="blog">Blog ({blogPosts?.length ?? 0})</TabsTrigger>
             <TabsTrigger value="tools">Tools ({tools?.length ?? 0})</TabsTrigger>
