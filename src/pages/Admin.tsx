@@ -26,6 +26,7 @@ import ImageLibrary from "@/components/admin/ImageLibrary";
 import SiteSettings from "@/components/admin/SiteSettings";
 import AnalyticsOverview from "@/components/admin/AnalyticsOverview";
 import BlogPreview from "@/components/admin/BlogPreview";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import ImagePicker from "@/components/admin/ImagePicker";
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent,
@@ -437,7 +438,8 @@ const Admin = () => {
   };
 
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-background text-foreground">Loading...</div>;
-  if (!user || !isAdmin) return null;
+  if (!user) return <div className="flex min-h-screen items-center justify-center bg-background text-foreground">Redirecting...</div>;
+  if (!isAdmin) return <div className="flex min-h-screen items-center justify-center bg-background text-foreground">Access denied</div>;
 
   return (
     <div className="min-h-screen bg-background">
@@ -466,7 +468,7 @@ const Admin = () => {
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="dashboard"><AdminDashboard /></TabsContent>
+          <TabsContent value="dashboard"><ErrorBoundary fallbackLabel="Dashboard crashed"><AdminDashboard /></ErrorBoundary></TabsContent>
 
           {/* TOOLS TAB */}
           <TabsContent value="tools">
@@ -699,9 +701,9 @@ const Admin = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="images"><ImageLibrary /></TabsContent>
-          <TabsContent value="analytics"><AnalyticsOverview /></TabsContent>
-          <TabsContent value="settings"><SiteSettings /></TabsContent>
+          <TabsContent value="images"><ErrorBoundary fallbackLabel="Image Library crashed"><ImageLibrary /></ErrorBoundary></TabsContent>
+          <TabsContent value="analytics"><ErrorBoundary fallbackLabel="Analytics crashed"><AnalyticsOverview /></ErrorBoundary></TabsContent>
+          <TabsContent value="settings"><ErrorBoundary fallbackLabel="Settings crashed"><SiteSettings /></ErrorBoundary></TabsContent>
         </Tabs>
       </main>
 
