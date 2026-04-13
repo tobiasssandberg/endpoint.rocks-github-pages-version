@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchPublicRows, withTimeout } from "@/lib/publicData";
-import { Calendar, ArrowRight } from "lucide-react";
+import { Calendar, ArrowRight, Clock } from "lucide-react";
+import { estimateReadingTime } from "@/lib/readingTime";
 import { trackEvent } from "@/lib/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
@@ -28,7 +29,7 @@ const BlogSection = ({ searchQuery = "", onResultCount }: BlogSectionProps) => {
       try {
         const sdkPromise = supabase
           .from("blog_posts")
-          .select("id, title, slug, excerpt, image_url, published_at")
+          .select("id, title, slug, excerpt, content, image_url, published_at")
           .order("published_at", { ascending: false })
           .then(({ data, error }) => {
             if (error) throw error;
@@ -114,13 +115,17 @@ const BlogSection = ({ searchQuery = "", onResultCount }: BlogSectionProps) => {
                 <p className="mb-4 flex-1 text-sm text-muted-foreground line-clamp-3">
                   {post.excerpt}
                 </p>
-                <div className="flex items-center text-xs text-muted-foreground">
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   {post.published_at && (
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
                       {new Date(post.published_at).toLocaleDateString("sv-SE")}
                     </span>
                   )}
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {estimateReadingTime(post.content)} min
+                  </span>
                 </div>
               </Link>
             ))}
