@@ -26,6 +26,7 @@ import ImageLibrary from "@/components/admin/ImageLibrary";
 import SiteSettings from "@/components/admin/SiteSettings";
 import AnalyticsOverview from "@/components/admin/AnalyticsOverview";
 import BlogPreview from "@/components/admin/BlogPreview";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import ImagePicker from "@/components/admin/ImagePicker";
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent,
@@ -182,9 +183,21 @@ const Admin = () => {
   useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
   useEffect(() => { if (!loading && user && !isAdmin) navigate("/"); }, [loading, user, isAdmin, navigate]);
 
-  // Fix: restore body overflow when leaving Admin (Radix Dialog may leave overflow:hidden)
+  // Fix: restore body overflow when leaving Admin or switching tabs
+  // Radix Dialog/Sheet may leave overflow:hidden on body
   useEffect(() => {
-    return () => { document.body.style.overflow = ""; };
+    const observer = new MutationObserver(() => {
+      // If no Radix portals with [data-state="open"] exist, ensure body is scrollable
+      const openOverlays = document.querySelectorAll("[data-state='open'][role='dialog']");
+      if (openOverlays.length === 0 && document.body.style.overflow === "hidden") {
+        document.body.style.overflow = "";
+      }
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["style"] });
+    return () => {
+      observer.disconnect();
+      document.body.style.overflow = "";
+    };
   }, []);
 
   useEffect(() => {
@@ -437,7 +450,8 @@ const Admin = () => {
   };
 
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-background text-foreground">Loading...</div>;
-  if (!user || !isAdmin) return null;
+  if (!user) return <div className="flex min-h-screen items-center justify-center bg-background text-foreground">Redirecting...</div>;
+  if (!isAdmin) return <div className="flex min-h-screen items-center justify-center bg-background text-foreground">Access denied</div>;
 
   return (
     <div className="min-h-screen bg-background">
@@ -466,10 +480,10 @@ const Admin = () => {
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="dashboard"><AdminDashboard /></TabsContent>
+          <TabsContent value="dashboard"><ErrorBoundary fallbackLabel="Dashboard crashed"><AdminDashboard /></ErrorBoundary></TabsContent>
 
           {/* TOOLS TAB */}
-          <TabsContent value="tools">
+          <TabsContent value="tools"><ErrorBoundary fallbackLabel="Tools crashed">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-2xl font-bold">Manage Tools</h2>
               <Dialog open={toolDialogOpen} onOpenChange={setToolDialogOpen}>
@@ -523,10 +537,10 @@ const Admin = () => {
                 </DndContext>
               </Table>
             </div>
-          </TabsContent>
+          </ErrorBoundary></TabsContent>
 
           {/* BLOG TAB */}
-          <TabsContent value="blog">
+          <TabsContent value="blog"><ErrorBoundary fallbackLabel="Blog crashed">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-2xl font-bold">Manage Blog</h2>
               <Dialog open={blogDialogOpen} onOpenChange={setBlogDialogOpen}>
@@ -697,11 +711,11 @@ const Admin = () => {
                 </TableBody>
               </Table>
             </div>
-          </TabsContent>
+          </ErrorBoundary></TabsContent>
 
-          <TabsContent value="images"><ImageLibrary /></TabsContent>
-          <TabsContent value="analytics"><AnalyticsOverview /></TabsContent>
-          <TabsContent value="settings"><SiteSettings /></TabsContent>
+          <TabsContent value="images"><ErrorBoundary fallbackLabel="Image Library crashed"><ImageLibrary /></ErrorBoundary></TabsContent>
+          <TabsContent value="analytics"><ErrorBoundary fallbackLabel="Analytics crashed"><AnalyticsOverview /></ErrorBoundary></TabsContent>
+          <TabsContent value="settings"><ErrorBoundary fallbackLabel="Settings crashed"><SiteSettings /></ErrorBoundary></TabsContent>
         </Tabs>
       </main>
 
