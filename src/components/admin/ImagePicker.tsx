@@ -6,17 +6,19 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Upload, Search } from "lucide-react";
 import { toast } from "sonner";
+import { optimizeImage } from "@/lib/imageOptimizer";
 
 interface ImagePickerProps {
   onSelect: (url: string) => void;
 }
 
 async function uploadImage(file: File): Promise<string | null> {
-  const ext = file.name.split(".").pop() || "png";
+  const optimized = await optimizeImage(file);
+  const ext = optimized.name.split(".").pop() || "png";
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   const { error } = await supabase.storage
     .from("blog-images")
-    .upload(fileName, file, { cacheControl: "3600", upsert: false });
+    .upload(fileName, optimized, { cacheControl: "3600", upsert: false });
   if (error) {
     toast.error("Upload failed: " + error.message);
     return null;
