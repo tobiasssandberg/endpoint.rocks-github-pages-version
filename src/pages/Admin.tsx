@@ -471,13 +471,13 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="dashboard">
-          <TabsList className="mb-6 flex-wrap">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="blog">Blog ({blogPosts?.length ?? 0})</TabsTrigger>
-            <TabsTrigger value="tools">Tools ({tools?.length ?? 0})</TabsTrigger>
-            <TabsTrigger value="images">Images</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsList className="mb-6 w-full justify-start overflow-x-auto overflow-y-hidden scrollbar-none">
+            <TabsTrigger value="dashboard" className="shrink-0">Dashboard</TabsTrigger>
+            <TabsTrigger value="blog" className="shrink-0">Blog ({blogPosts?.length ?? 0})</TabsTrigger>
+            <TabsTrigger value="tools" className="shrink-0">Tools ({tools?.length ?? 0})</TabsTrigger>
+            <TabsTrigger value="images" className="shrink-0">Images</TabsTrigger>
+            <TabsTrigger value="analytics" className="shrink-0">Analytics</TabsTrigger>
+            <TabsTrigger value="settings" className="shrink-0">Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard"><ErrorBoundary fallbackLabel="Dashboard crashed"><AdminDashboard /></ErrorBoundary></TabsContent>
