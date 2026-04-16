@@ -1,25 +1,26 @@
 
 
-## Bildoptimering vid upload
+## Problem
 
-### Problem
-Bilder laddas upp i originalstorlek och -format utan komprimering, vilket ger onödigt stora filer och långsammare laddtider.
+Nested lists (sublists) in blog posts don't render properly. This is a two-part issue:
 
-### Lösning
-Skapa en gemensam `optimizeImage`-funktion som använder Canvas API i webbläsaren för att resiza och komprimera bilder innan de laddas upp till storage. Konverterar till WebP (med JPEG-fallback) och begränsar maxbredd till 1600px.
+1. **Editor preview**: The `@uiw/react-md-editor` preview may not style nested lists with proper indentation
+2. **Published post rendering**: The `prose prose-invert` Tailwind Typography classes should handle nested lists, but may need explicit CSS overrides to ensure proper `list-style-type` and padding at deeper nesting levels
 
-### Ändringar
+## Plan
 
-**Ny fil: `src/lib/imageOptimizer.ts`**
-- Funktion `optimizeImage(file: File, options?)` som returnerar en optimerad `File`
-- Laddar bilden i en `<canvas>`, skalar ner till max 1600px bredd (bibehåller proportioner)
-- Exporterar som WebP (quality 0.82), faller tillbaka till JPEG om WebP ej stöds
-- Skippar optimering om filen redan är under 100 KB
-- Skippar SVG/GIF (dessa bör inte rasteriseras)
+### 1. Add nested list CSS styles in `src/index.css`
 
-**`src/components/admin/ImagePicker.tsx`** — Anropa `optimizeImage(file)` innan `supabase.storage.upload()`
+Add styles targeting nested lists inside `.prose` containers and inside the MDEditor preview (`.w-md-editor-preview`):
 
-**`src/components/MarkdownEditor.tsx`** — Samma ändring i dess `uploadImage`-funktion
+- Ensure `ul`, `ol` have proper `list-style-type` and `padding-left` at each nesting level
+- Ensure nested `ul ul`, `ul ol`, `ol ul`, `ol ol` get increased indentation
+- Target both the blog post rendering (`.prose`) and the editor preview
 
-Ingen serverändring behövs — allt sker client-side före upload.
+### 2. Verify MDEditor tab/indent behavior
+
+The `@uiw/react-md-editor` already supports indentation in the textarea (pressing Tab or typing spaces). Markdown nested lists work with 2-4 spaces of indentation. No editor code changes should be needed — the fix is purely CSS for rendering.
+
+### Files to change
+- **`src/index.css`** — Add nested list styles for `.prose` and `.w-md-editor-preview` containers
 
