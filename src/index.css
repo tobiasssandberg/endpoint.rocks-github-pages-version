@@ -112,3 +112,17 @@
     display: none;
   }
 }
+
+/* Nested list styles for prose and editor preview */
+.prose ul, .w-md-editor-preview ul { list-style-type: disc; padding-left: 1.5em; }
+.prose ol, .w-md-editor-preview ol { list-style-type: decimal; padding-left: 1.5em; }
+.prose ul ul, .w-md-editor-preview ul ul { list-style-type: circle; }
+.prose ul ul ul, .w-md-editor-preview ul ul ul { list-style-type: square; }
+.prose ol ol, .w-md-editor-preview ol ol { list-style-type: lower-alpha; }
+.prose ol ol ol, .w-md-editor-preview ol ol ol { list-style-type: lower-roman; }
+.prose :is(ul, ol) :is(ul, ol),
+.w-md-editor-preview :is(ul, ol) :is(ul, ol) {
+  padding-left: 1.5em;
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
