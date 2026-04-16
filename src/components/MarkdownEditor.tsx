@@ -183,6 +183,8 @@ const MarkdownEditor = ({ value, onChange }: MarkdownEditorProps) => {
           commands.unorderedListCommand,
           commands.orderedListCommand,
           commands.checkedListCommand,
+          indentCommand,
+          outdentCommand,
           commands.divider,
           imageUploadCommand,
           imageLibraryCommand,
