@@ -117,6 +117,40 @@ const MarkdownEditor = ({ value, onChange }: MarkdownEditorProps) => {
     },
   };
 
+  const indentCommand: commands.ICommand = {
+    name: "indent",
+    keyCommand: "indent",
+    buttonProps: { "aria-label": "Indent", title: "Indent (nested list)" },
+    icon: <Indent className="h-3 w-3" />,
+    execute: (_state, api) => {
+      if (!api) return;
+      const { selection, text } = api.textArea;
+      const start = text.lastIndexOf("\n", selection.start - 1) + 1;
+      const end = selection.end;
+      const selected = text.slice(start, end);
+      const indented = selected.replace(/^/gm, "  ");
+      api.textArea.setSelectionRange(start, end);
+      api.replaceSelection(indented);
+    },
+  };
+
+  const outdentCommand: commands.ICommand = {
+    name: "outdent",
+    keyCommand: "outdent",
+    buttonProps: { "aria-label": "Outdent", title: "Outdent" },
+    icon: <Outdent className="h-3 w-3" />,
+    execute: (_state, api) => {
+      if (!api) return;
+      const { selection, text } = api.textArea;
+      const start = text.lastIndexOf("\n", selection.start - 1) + 1;
+      const end = selection.end;
+      const selected = text.slice(start, end);
+      const outdented = selected.replace(/^ {1,2}/gm, "");
+      api.textArea.setSelectionRange(start, end);
+      api.replaceSelection(outdented);
+    },
+  };
+
   return (
     <div data-color-mode="dark" onPaste={handlePaste}>
       <input
