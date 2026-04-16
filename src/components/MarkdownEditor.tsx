@@ -3,7 +3,7 @@ import MDEditor, { commands } from "@uiw/react-md-editor";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { optimizeImage } from "@/lib/imageOptimizer";
-import { ImagePlus, Images } from "lucide-react";
+import { ImagePlus, Images, Indent, Outdent } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ImagePicker from "@/components/admin/ImagePicker";
 
