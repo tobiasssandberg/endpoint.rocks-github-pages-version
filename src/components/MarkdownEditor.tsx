@@ -3,7 +3,7 @@ import MDEditor, { commands } from "@uiw/react-md-editor";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { optimizeImage } from "@/lib/imageOptimizer";
-import { ImagePlus, Images } from "lucide-react";
+import { ImagePlus, Images, Indent, Outdent } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ImagePicker from "@/components/admin/ImagePicker";
 
@@ -117,6 +117,42 @@ const MarkdownEditor = ({ value, onChange }: MarkdownEditorProps) => {
     },
   };
 
+  const indentCommand: commands.ICommand = {
+    name: "indent",
+    keyCommand: "indent",
+    buttonProps: { "aria-label": "Indent", title: "Indent (nested list)" },
+    icon: <Indent className="h-3 w-3" />,
+    execute: (state, api) => {
+      if (!api || !state) return;
+      const ta = api.textArea;
+      const text = ta.value;
+      const start = text.lastIndexOf("\n", ta.selectionStart - 1) + 1;
+      const end = ta.selectionEnd;
+      const selected = text.slice(start, end);
+      const indented = selected.replace(/^/gm, "  ");
+      ta.setSelectionRange(start, end);
+      api.replaceSelection(indented);
+    },
+  };
+
+  const outdentCommand: commands.ICommand = {
+    name: "outdent",
+    keyCommand: "outdent",
+    buttonProps: { "aria-label": "Outdent", title: "Outdent" },
+    icon: <Outdent className="h-3 w-3" />,
+    execute: (state, api) => {
+      if (!api || !state) return;
+      const ta = api.textArea;
+      const text = ta.value;
+      const start = text.lastIndexOf("\n", ta.selectionStart - 1) + 1;
+      const end = ta.selectionEnd;
+      const selected = text.slice(start, end);
+      const outdented = selected.replace(/^ {1,2}/gm, "");
+      ta.setSelectionRange(start, end);
+      api.replaceSelection(outdented);
+    },
+  };
+
   return (
     <div data-color-mode="dark" onPaste={handlePaste}>
       <input
@@ -147,6 +183,8 @@ const MarkdownEditor = ({ value, onChange }: MarkdownEditorProps) => {
           commands.unorderedListCommand,
           commands.orderedListCommand,
           commands.checkedListCommand,
+          indentCommand,
+          outdentCommand,
           commands.divider,
           imageUploadCommand,
           imageLibraryCommand,
